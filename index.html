@@ -996,29 +996,50 @@ async function submitPayment(){
   const reference   = 'EGS-'+Date.now();
 
   const isCredit = currentPayTab==='credit';
-  const payload  = {
-    amount:      amountCents,
-    reference,
-    kind:        currentPayTab,
-    customerName:  document.getElementById('ckName').value.trim(),
-    customerCpf:   document.getElementById('ckCpf').value.replace(/\D/g,''),
-    customerEmail: document.getElementById('ckEmail').value.trim(),
-    installments:  currentPayTab==='credit'
-                    ? parseInt(document.getElementById('ckInstallments').value)
-                    : 1,
-    cardNumber:  currentPayTab!=='pix'
-                    ? document.getElementById(isCredit?'ckCardNumber':'ckCardNumberD').value
-                    : '',
-    cardExpiry:  currentPayTab!=='pix'
-                    ? document.getElementById(isCredit?'ckExpiry':'ckExpiryD').value
-                    : '',
-    cardCvv:     currentPayTab!=='pix'
-                    ? document.getElementById(isCredit?'ckCvv':'ckCvvD').value
-                    : '',
-    cardHolder:  currentPayTab!=='pix'
-                    ? document.getElementById(isCredit?'ckHolder':'ckHolderD').value
-                    : '',
-  };
+  // ================================================================
+// INSTRUÇÃO: no seu index.html, dentro da função submitPayment(),
+// localize o objeto "payload = {" e substitua o bloco inteiro
+// pelo código abaixo.
+//
+// O que muda:
+//   + customerPhone  → telefone do cliente
+//   + city           → cidade extraída do telefone/DDD (Natal/RN como padrão)
+//   + items          → array com os itens do carrinho
+// ================================================================
+
+const payload = {
+  amount:      amountCents,
+  installments: isCredit ? parseInt(document.getElementById('ckInstallments').value) : 1,
+
+  // dados do cartão (ignorados no Pix)
+  cardNumber:  currentPayTab !== 'pix' ? document.getElementById(isCredit ? 'ckCardNumber' : 'ckCardNumberD').value : '',
+  cardExpiry:  currentPayTab !== 'pix' ? document.getElementById(isCredit ? 'ckExpiry'     : 'ckExpiryD').value     : '',
+  cardCvv:     currentPayTab !== 'pix' ? document.getElementById(isCredit ? 'ckCvv'        : 'ckCvvD').value        : '',
+  cardHolder:  currentPayTab !== 'pix' ? document.getElementById(isCredit ? 'ckHolder'     : 'ckHolderD').value     : '',
+
+  // dados do cliente
+  customerName:  document.getElementById('ckName').value.trim(),
+  customerCpf:   document.getElementById('ckCpf').value.replace(/\D/g, ''),
+  customerEmail: document.getElementById('ckEmail').value.trim(),
+  customerPhone: document.getElementById('ckPhone').value.trim(),   // ← NOVO
+
+  // cidade — pega do DDD do telefone; ajuste conforme necessidade
+  city: (() => {
+    const ddd = document.getElementById('ckPhone').value.replace(/\D/g, '').slice(0, 2);
+    const ddds = { '84': 'Natal/RN', '83': 'João Pessoa/PB', '85': 'Fortaleza/CE', '86': 'Teresina/PI' };
+    return ddds[ddd] || 'Natal/RN';
+  })(),                                                              // ← NOVO
+
+  // itens do carrinho
+  items: cart.map(i => ({                                           // ← NOVO
+    name:  i.nome || i.name || 'Produto',
+    qty:   i.qty,
+    price: parseFloat(i.preco || i.price || 0).toFixed(2),
+  })),
+
+  kind:      currentPayTab,
+  reference: reference,
+};
 
   try{
     const res  = await fetch('/api/checkout', {
