@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EGS Materiais de Construção</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --orange:#E8500A;
+    --orange-dark:#BF3D04;
+    --orange-light:#FFF0E8;
+    --charcoal:#1A1A18;
+    --gray:#5A5A55;
+    --gray-light:#F5F4F0;
+    --gray-mid:#E4E3DE;
+    --white:#FFFFFF;
+    --shadow:0 4px 24px rgba(0,0,0,0.08);
+    --shadow-hover:0 8px 40px rgba(232,80,10,0.18);
+  }
+  html{scroll-behavior:smooth}
+  body{font-family:'DM Sans',sans-serif;color:var(--charcoal);background:var(--white);overflow-x:hidden}
+
+  /* NAV */
+  nav{position:sticky;top:0;z-index:100;background:var(--charcoal);padding:0 5%;display:flex;align-items:center;justify-content:space-between;height:64px}
+  .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;color:var(--white);letter-spacing:-0.5px}
+  .logo span{color:var(--orange)}
+  .nav-links{display:flex;gap:2rem;list-style:none}
+  .nav-links a{color:#ccc;text-decoration:none;font-size:0.9rem;font-weight:400;transition:color .2s}
+  .nav-links a:hover{color:var(--white)}
+  .nav-right{display:flex;align-items:center;gap:1rem}
+  .nav-cart{background:var(--orange);color:var(--white);border:none;padding:0.5rem 1.2rem;border-radius:6px;font-size:0.85rem;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .2s;font-family:'DM Sans',sans-serif}
+  .nav-cart:hover{background:var(--orange-dark)}
+  .cart-badge{background:var(--white);color:var(--orange);border-radius:50%;width:18px;height:18px;font-size:0.7rem;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .hamburger{display:none;background:none;border:none;cursor:pointer;padding:4px}
+  .hamburger span{display:block;width:24px;height:2px;background:var(--white);margin:5px 0;transition:.3s}
+
+  /* HERO */
+  .hero{background:var(--charcoal);min-height:88vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:4rem 5%;gap:2rem;position:relative;overflow:hidden}
+  .hero::before{content:'';position:absolute;right:-8%;top:-10%;width:55%;height:130%;background:linear-gradient(135deg,#2c2c26 0%,#1a1a14 100%);border-radius:50% 0 0 50%;transform:skewY(-3deg)}
+  .hero-content{position:relative;z-index:2}
+  .hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(232,80,10,0.15);border:1px solid rgba(232,80,10,0.3);color:var(--orange);padding:0.4rem 1rem;border-radius:999px;font-size:0.8rem;font-weight:500;margin-bottom:1.5rem}
+  .hero h1{font-family:'Syne',sans-serif;font-size:clamp(2.2rem,5vw,4rem);font-weight:800;color:var(--white);line-height:1.1;margin-bottom:1.2rem}
+  .hero h1 em{font-style:normal;color:var(--orange)}
+  .hero p{color:#aaa;font-size:1.05rem;line-height:1.7;max-width:440px;margin-bottom:2rem}
+  .hero-ctas{display:flex;gap:1rem;flex-wrap:wrap}
+  .btn-primary{background:var(--orange);color:var(--white);border:none;padding:0.85rem 1.8rem;border-radius:8px;font-size:0.95rem;font-weight:500;cursor:pointer;transition:all .25s;font-family:'DM Sans',sans-serif;text-decoration:none;display:inline-block}
+  .btn-primary:hover{background:var(--orange-dark);transform:translateY(-2px)}
+  .btn-secondary{background:transparent;color:var(--white);border:1px solid rgba(255,255,255,0.25);padding:0.85rem 1.8rem;border-radius:8px;font-size:0.95rem;font-weight:400;cursor:pointer;transition:all .25s;font-family:'DM Sans',sans-serif;text-decoration:none;display:inline-block}
+  .btn-secondary:hover{border-color:var(--white);background:rgba(255,255,255,0.05)}
+  .hero-stats{display:flex;gap:2.5rem;margin-top:3rem}
+  .hero-stat span:first-child{display:block;font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:700;color:var(--white)}
+  .hero-stat span:last-child{font-size:0.8rem;color:#888}
+  .hero-visual{position:relative;z-index:2;display:flex;justify-content:center;align-items:center}
+  .hero-card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:2rem;width:100%;max-width:380px;backdrop-filter:blur(10px)}
+  .hero-card-title{font-size:0.75rem;color:#777;text-transform:uppercase;letter-spacing:1px;margin-bottom:1rem}
+  .hero-product-list{display:flex;flex-direction:column;gap:0.8rem}
+  .hero-product-item{display:flex;align-items:center;gap:1rem;padding:0.8rem;background:rgba(255,255,255,0.04);border-radius:10px;border:1px solid rgba(255,255,255,0.06)}
+  .hero-product-icon{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+  .hi-orange{background:rgba(232,80,10,0.2)}
+  .hi-blue{background:rgba(55,138,221,0.2)}
+  .hi-green{background:rgba(99,153,34,0.2)}
+  .hero-product-info{flex:1}
+  .hero-product-info strong{display:block;color:var(--white);font-size:0.9rem;font-weight:500}
+  .hero-product-info span{color:#888;font-size:0.78rem}
+  .hero-product-price{color:var(--orange);font-weight:600;font-size:0.95rem;font-family:'Syne',sans-serif}
+
+  /* FEATURES STRIP */
+  .features-strip{background:var(--orange);padding:0.8rem 5%;display:flex;justify-content:center;gap:clamp(1rem,4vw,4rem);flex-wrap:wrap}
+  .feature-item{display:flex;align-items:center;gap:8px;color:var(--white);font-size:0.85rem;font-weight:400}
+  .feature-item svg{opacity:0.85}
+
+  /* SEARCH BAR */
+  .search-section{padding:2.5rem 5%;background:var(--gray-light)}
+  .search-bar{max-width:700px;margin:0 auto;display:flex;background:var(--white);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;border:1px solid var(--gray-mid)}
+  .search-bar select{padding:0 1rem;border:none;border-right:1px solid var(--gray-mid);background:var(--white);color:var(--gray);font-size:0.85rem;outline:none;cursor:pointer;font-family:'DM Sans',sans-serif;min-width:140px}
+  .search-bar input{flex:1;padding:0.95rem 1rem;border:none;outline:none;font-size:0.95rem;font-family:'DM Sans',sans-serif;color:var(--charcoal)}
+  .search-bar input::placeholder{color:#bbb}
+  .search-btn{background:var(--orange);color:var(--white);border:none;padding:0 1.5rem;cursor:pointer;font-size:0.9rem;font-weight:500;transition:background .2s;font-family:'DM Sans',sans-serif;white-space:nowrap}
+  .search-btn:hover{background:var(--orange-dark)}
+
+  /* CATEGORIES */
+  .categories{padding:4rem 5%}
+  .section-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2rem}
+  .section-title{font-family:'Syne',sans-serif;font-size:clamp(1.5rem,3vw,2.2rem);font-weight:700;color:var(--charcoal)}
+  .section-title span{color:var(--orange)}
+  .view-all{color:var(--orange);text-decoration:none;font-size:0.9rem;font-weight:500;border-bottom:1px solid var(--orange);padding-bottom:2px;transition:opacity .2s}
+  .view-all:hover{opacity:0.7}
+  .cat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem}
+  .cat-card{background:var(--gray-light);border-radius:12px;padding:1.5rem 1rem;text-align:center;cursor:pointer;border:2px solid transparent;transition:all .25s;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:0.6rem}
+  .cat-card:hover,.cat-card.active{border-color:var(--orange);background:var(--orange-light)}
+  .cat-icon{font-size:2rem;width:56px;height:56px;border-radius:12px;background:var(--white);display:flex;align-items:center;justify-content:center;transition:all .25s}
+  .cat-card:hover .cat-icon,.cat-card.active .cat-icon{background:var(--orange);transform:scale(1.05)}
+  .cat-name{font-size:0.85rem;font-weight:500;color:var(--charcoal)}
+  .cat-count{font-size:0.75rem;color:var(--gray)}
+
+  /* PRODUCTS */
+  .products-section{padding:1rem 5% 4rem}
+  .filter-bar{display:flex;gap:0.6rem;flex-wrap:wrap;margin-bottom:2rem;align-items:center}
+  .filter-chip{padding:0.4rem 1rem;border-radius:999px;border:1px solid var(--gray-mid);background:var(--white);font-size:0.82rem;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;color:var(--gray)}
+  .filter-chip:hover,.filter-chip.active{background:var(--orange);border-color:var(--orange);color:var(--white)}
+  .filter-label{font-size:0.85rem;color:var(--gray);margin-right:0.5rem}
+  .products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1.5rem}
+  .product-card{background:var(--white);border-radius:14px;border:1px solid var(--gray-mid);overflow:hidden;transition:all .3s;cursor:pointer;display:flex;flex-direction:column}
+  .product-card:hover{box-shadow:var(--shadow-hover);border-color:rgba(232,80,10,0.3);transform:translateY(-3px)}
+  .product-img{width:100%;height:180px;background:var(--gray-light);display:flex;align-items:center;justify-content:center;font-size:3.5rem;position:relative;overflow:hidden}
+  .product-badge{position:absolute;top:10px;left:10px;background:var(--orange);color:var(--white);font-size:0.7rem;font-weight:600;padding:3px 8px;border-radius:4px}
+  .product-badge.novo{background:#1D9E75}
+  .product-badge.promo{background:#D85A30}
+  .product-info{padding:1rem 1.2rem 1.2rem;flex:1;display:flex;flex-direction:column}
+  .product-cat{font-size:0.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.3rem}
+  .product-name{font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:600;color:var(--charcoal);line-height:1.3;margin-bottom:0.5rem}
+  .product-rating{display:flex;align-items:center;gap:4px;margin-bottom:0.8rem}
+  .stars{color:#E8500A;font-size:0.8rem}
+  .product-rating span{font-size:0.78rem;color:var(--gray)}
+  .product-price-row{display:flex;align-items:flex-end;justify-content:space-between;margin-top:auto;gap:0.5rem}
+  .product-price{font-family:'Syne',sans-serif}
+  .price-old{font-size:0.78rem;color:var(--gray);text-decoration:line-through;display:block}
+  .price-new{font-size:1.25rem;font-weight:700;color:var(--orange)}
+  .price-unit{font-size:0.7rem;color:var(--gray);font-weight:400}
+  .btn-add{background:var(--orange);color:var(--white);border:none;width:36px;height:36px;border-radius:8px;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+  .btn-add:hover{background:var(--orange-dark);transform:scale(1.05)}
+  .btn-add.added{background:#1D9E75}
+
+  /* PROMO BANNER */
+  .promo-banner{margin:0 5% 4rem;background:var(--charcoal);border-radius:20px;padding:3rem;display:flex;align-items:center;justify-content:space-between;gap:2rem;overflow:hidden;position:relative}
+  .promo-banner::after{content:'';position:absolute;right:0;top:0;width:40%;height:100%;background:linear-gradient(135deg,transparent,rgba(232,80,10,0.15))}
+  .promo-content{position:relative;z-index:1}
+  .promo-tag{background:var(--orange);color:var(--white);padding:0.3rem 0.9rem;border-radius:4px;font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;display:inline-block;margin-bottom:1rem}
+  .promo-content h2{font-family:'Syne',sans-serif;font-size:clamp(1.5rem,3vw,2.5rem);font-weight:800;color:var(--white);margin-bottom:0.8rem;line-height:1.1}
+  .promo-content h2 em{font-style:normal;color:var(--orange)}
+  .promo-content p{color:#aaa;font-size:0.95rem;margin-bottom:1.5rem;max-width:420px}
+  .promo-visual{position:relative;z-index:1;display:flex;gap:1rem;flex-wrap:wrap}
+  .promo-stat-card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:1.2rem 1.5rem;text-align:center;min-width:120px}
+  .promo-stat-card strong{display:block;font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:700;color:var(--orange)}
+  .promo-stat-card span{font-size:0.78rem;color:#888}
+
+  /* BRANDS */
+  .brands-section{padding:3rem 5%;background:var(--gray-light)}
+  .brands-grid{display:flex;flex-wrap:wrap;gap:1rem;justify-content:center;align-items:center;margin-top:1.5rem}
+  .brand-pill{background:var(--white);border:1px solid var(--gray-mid);border-radius:999px;padding:0.6rem 1.5rem;font-size:0.9rem;font-weight:600;color:var(--gray);letter-spacing:0.5px;transition:all .2s;cursor:pointer}
+  .brand-pill:hover{border-color:var(--orange);color:var(--orange);background:var(--orange-light)}
+
+  /* SERVICES */
+  .services-section{padding:4rem 5%}
+  .services-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem;margin-top:2rem}
+  .service-card{padding:2rem 1.5rem;border-radius:14px;border:1px solid var(--gray-mid);background:var(--white);transition:all .3s}
+  .service-card:hover{border-color:var(--orange);box-shadow:var(--shadow)}
+  .service-icon{width:52px;height:52px;background:var(--orange-light);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:1.2rem}
+  .service-card h3{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:0.6rem;color:var(--charcoal)}
+  .service-card p{font-size:0.88rem;color:var(--gray);line-height:1.6}
+
+  /* TESTIMONIALS */
+  .testimonials{padding:4rem 5%;background:var(--gray-light)}
+  .testimonials-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;margin-top:2rem}
+  .testimonial-card{background:var(--white);border-radius:14px;padding:1.8rem;border:1px solid var(--gray-mid)}
+  .testimonial-stars{color:var(--orange);font-size:1rem;margin-bottom:0.8rem}
+  .testimonial-text{font-size:0.9rem;color:var(--gray);line-height:1.65;margin-bottom:1.2rem;font-style:italic}
+  .testimonial-author{display:flex;align-items:center;gap:10px}
+  .author-avatar{width:38px;height:38px;border-radius:50%;background:var(--orange);color:var(--white);font-weight:700;font-size:0.85rem;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif}
+  .author-info strong{display:block;font-size:0.88rem;font-weight:600;color:var(--charcoal)}
+  .author-info span{font-size:0.78rem;color:var(--gray)}
+
+  /* CTA */
+  .cta-section{padding:5rem 5%;text-align:center;background:var(--white)}
+  .cta-section h2{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,4vw,3rem);font-weight:800;margin-bottom:1rem}
+  .cta-section h2 span{color:var(--orange)}
+  .cta-section p{color:var(--gray);font-size:1rem;margin-bottom:2rem;max-width:500px;margin-left:auto;margin-right:auto}
+  .cta-form{display:flex;max-width:460px;margin:0 auto;background:var(--white);border:1.5px solid var(--gray-mid);border-radius:10px;overflow:hidden}
+  .cta-form input{flex:1;padding:0.9rem 1.2rem;border:none;outline:none;font-size:0.95rem;font-family:'DM Sans',sans-serif;color:var(--charcoal)}
+  .cta-form button{background:var(--orange);color:var(--white);border:none;padding:0 1.5rem;cursor:pointer;font-size:0.9rem;font-weight:500;font-family:'DM Sans',sans-serif;transition:background .2s}
+  .cta-form button:hover{background:var(--orange-dark)}
+
+  /* FOOTER */
+  footer{background:var(--charcoal);color:#aaa;padding:3rem 5% 1.5rem}
+  .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:3rem;margin-bottom:2.5rem}
+  .footer-brand .logo{font-size:1.4rem;display:block;margin-bottom:0.8rem}
+  .footer-brand p{font-size:0.85rem;line-height:1.7;color:#777;max-width:260px}
+  .footer-socials{display:flex;gap:0.6rem;margin-top:1.2rem}
+  .social-btn{width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:0.9rem;cursor:pointer;transition:all .2s;color:var(--white);text-decoration:none}
+  .social-btn:hover{background:var(--orange);border-color:var(--orange)}
+  .footer-col h4{font-family:'Syne',sans-serif;font-size:0.9rem;font-weight:700;color:var(--white);margin-bottom:1rem}
+  .footer-col ul{list-style:none}
+  .footer-col ul li{margin-bottom:0.5rem}
+  .footer-col ul a{color:#777;text-decoration:none;font-size:0.84rem;transition:color .2s}
+  .footer-col ul a:hover{color:var(--orange)}
+  .footer-bottom{border-top:1px solid rgba(255,255,255,0.08);padding-top:1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+  .footer-bottom p{font-size:0.8rem;color:#555}
+  .footer-payments{display:flex;gap:0.5rem}
+  .payment-badge{background:rgba(255,255,255,0.08);border-radius:4px;padding:3px 8px;font-size:0.72rem;color:#888}
+
+  /* CART MODAL */
+  .cart-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;justify-content:flex-end}
+  .cart-overlay.open{display:flex}
+  .cart-panel{background:var(--white);width:100%;max-width:400px;height:100%;display:flex;flex-direction:column;animation:slideIn .3s ease}
+  @keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+  .cart-header{padding:1.5rem;border-bottom:1px solid var(--gray-mid);display:flex;justify-content:space-between;align-items:center}
+  .cart-header h3{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700}
+  .cart-close{background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--gray);padding:4px}
+  .cart-close:hover{color:var(--charcoal)}
+  .cart-items{flex:1;overflow-y:auto;padding:1.2rem}
+  .cart-item{display:flex;gap:0.8rem;padding:0.8rem;background:var(--gray-light);border-radius:10px;margin-bottom:0.8rem;align-items:center}
+  .cart-item-icon{font-size:1.8rem;width:50px;height:50px;background:var(--white);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .cart-item-details{flex:1}
+  .cart-item-details strong{display:block;font-size:0.88rem;font-weight:600;color:var(--charcoal)}
+  .cart-item-details span{font-size:0.8rem;color:var(--gray)}
+  .cart-item-price{font-family:'Syne',sans-serif;font-weight:700;color:var(--orange);font-size:0.95rem}
+  .cart-item-remove{background:none;border:none;color:var(--gray);cursor:pointer;font-size:0.8rem;display:block;margin-top:2px}
+  .cart-item-remove:hover{color:#E24B4A}
+  .cart-empty{text-align:center;padding:3rem 1rem;color:var(--gray)}
+  .cart-empty div{font-size:3rem;margin-bottom:1rem}
+  .cart-footer{padding:1.5rem;border-top:1px solid var(--gray-mid)}
+  .cart-total{display:flex;justify-content:space-between;margin-bottom:1rem}
+  .cart-total span:first-child{font-weight:500;color:var(--gray)}
+  .cart-total span:last-child{font-family:'Syne',sans-serif;font-weight:700;font-size:1.2rem;color:var(--charcoal)}
+  .btn-checkout{width:100%;background:var(--orange);color:var(--white);border:none;padding:1rem;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s}
+  .btn-checkout:hover{background:var(--orange-dark)}
+
+  /* MOBILE NAV */
+  .mobile-menu{display:none;position:fixed;inset:0;background:var(--charcoal);z-index:150;padding:5rem 2rem 2rem;flex-direction:column;gap:1.5rem}
+  .mobile-menu.open{display:flex}
+  .mobile-menu a{color:var(--white);text-decoration:none;font-size:1.2rem;font-family:'Syne',sans-serif;font-weight:600;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:1rem}
+  .mobile-close{position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--white);font-size:1.5rem;cursor:pointer}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--charcoal);color:var(--white);padding:0.8rem 1.5rem;border-radius:8px;font-size:0.9rem;z-index:999;transition:transform .4s;border-left:3px solid var(--orange)}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+
+  /* RESPONSIVE */
+  @media(max-width:900px){
+    .hero{grid-template-columns:1fr;min-height:auto;padding:3rem 5%}
+    .hero::before{display:none}
+    .hero-visual{display:none}
+    .footer-grid{grid-template-columns:1fr 1fr}
+    .promo-banner{flex-direction:column}
+    .promo-visual{justify-content:center}
+  }
+  @media(max-width:640px){
+    .nav-links{display:none}
+    .hamburger{display:block}
+    .footer-grid{grid-template-columns:1fr}
+    .hero-stats{flex-wrap:wrap;gap:1.5rem}
+    .search-bar select{display:none}
+    .section-header{flex-direction:column;align-items:flex-start;gap:0.5rem}
+  }
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast">✓ Produto adicionado ao carrinho!</div>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" onclick="closeMobile()">✕</button>
+  <a href="#inicio" onclick="closeMobile()">Início</a>
+  <a href="#produtos" onclick="closeMobile()">Produtos</a>
+  <a href="#servicos" onclick="closeMobile()">Serviços</a>
+  <a href="#contato" onclick="closeMobile()">Contato</a>
+</div>
+
+<!-- CART PANEL -->
+<div class="cart-overlay" id="cartOverlay" onclick="closeCartIfOutside(event)">
+  <div class="cart-panel">
+    <div class="cart-header">
+      <h3>🛒 Meu Carrinho</h3>
+      <button class="cart-close" onclick="closeCart()">✕</button>
+    </div>
+    <div class="cart-items" id="cartItems">
+      <div class="cart-empty">
+        <div>🧱</div>
+        <p>Seu carrinho está vazio.<br>Adicione produtos para começar!</p>
+      </div>
+    </div>
+    <div class="cart-footer">
+      <div class="cart-total">
+        <span>Total</span>
+        <span id="cartTotal">R$ 0,00</span>
+      </div>
+      <button class="btn-checkout" onclick="checkout()">Finalizar Pedido →</button>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav id="inicio">
+  <div class="logo">EGS<span>.</span></div>
+  <ul class="nav-links">
+    <li><a href="#inicio">Início</a></li>
+    <li><a href="#produtos">Produtos</a></li>
+    <li><a href="#servicos">Serviços</a></li>
+    <li><a href="#contato">Contato</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="nav-cart" onclick="openCart()">
+      🛒 Carrinho <span class="cart-badge" id="cartCount">0</span>
+    </button>
+    <button class="hamburger" onclick="openMobile()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">⚡ Entrega expressa em Natal e região</div>
+    <h1>Construa com<br><em>qualidade</em> e<br>confiança</h1>
+    <p>Tudo para sua obra em um só lugar. Cimento, tijolos, ferramentas, acabamentos e muito mais com os melhores preços do RN.</p>
+    <div class="hero-ctas">
+      <a href="#produtos" class="btn-primary">Ver Produtos →</a>
+      <a href="#contato" class="btn-secondary">Fale Conosco</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span>+5.000</span>
+        <span>Produtos</span>
+      </div>
+      <div class="hero-stat">
+        <span>+12 anos</span>
+        <span>No mercado</span>
+      </div>
+      <div class="hero-stat">
+        <span>RN</span>
+        <span>Atendimento</span>
+      </div>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="hero-card">
+      <div class="hero-card-title">Produtos em destaque</div>
+      <div class="hero-product-list">
+        <div class="hero-product-item">
+          <div class="hero-product-icon hi-orange">🧱</div>
+          <div class="hero-product-info">
+            <strong>Cimento CP II 50kg</strong>
+            <span>Votoran — Resistência alta</span>
+          </div>
+          <div class="hero-product-price">R$42,90</div>
+        </div>
+        <div class="hero-product-item">
+          <div class="hero-product-icon hi-blue">🔧</div>
+          <div class="hero-product-info">
+            <strong>Furadeira de Impacto</strong>
+            <span>Bosch — 650W</span>
+          </div>
+          <div class="hero-product-price">R$289,00</div>
+        </div>
+        <div class="hero-product-item">
+          <div class="hero-product-icon hi-green">🪟</div>
+          <div class="hero-product-info">
+            <strong>Azulejo 60x60cm</strong>
+            <span>Portobello — Cx c/ 4un</span>
+          </div>
+          <div class="hero-product-price">R$89,90</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES STRIP -->
+<div class="features-strip">
+  <div class="feature-item">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    Entrega rápida em Natal
+  </div>
+  <div class="feature-item">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    Produtos garantidos
+  </div>
+  <div class="feature-item">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+    Pix, cartão e boleto
+  </div>
+  <div class="feature-item">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+    Suporte especializado
+  </div>
+</div>
+
+<!-- SEARCH -->
+<div class="search-section">
+  <div class="search-bar">
+    <select>
+      <option>Categorias</option>
+      <option>Cimento e Argamassa</option>
+      <option>Ferramentas</option>
+      <option>Revestimentos</option>
+      <option>Hidráulica</option>
+      <option>Elétrica</option>
+    </select>
+    <input type="text" placeholder="Buscar cimento, tijolos, ferramentas...">
+    <button class="search-btn">Buscar</button>
+  </div>
+</div>
+
+<!-- CATEGORIES -->
+<section class="categories">
+  <div class="section-header">
+    <h2 class="section-title">Categorias em <span>destaque</span></h2>
+    <a href="#" class="view-all">Ver todas</a>
+  </div>
+  <div class="cat-grid">
+    <a class="cat-card active" href="#produtos" onclick="filterCat('Todos')">
+      <div class="cat-icon">🏗️</div>
+      <span class="cat-name">Todos</span>
+      <span class="cat-count">+5.000 itens</span>
+    </a>
+    <a class="cat-card" href="#produtos" onclick="filterCat('Cimento')">
+      <div class="cat-icon">🧱</div>
+      <span class="cat-name">Cimento</span>
+      <span class="cat-count">+120 itens</span>
+    </a>
+    <a class="cat-card" href="#produtos" onclick="filterCat('Ferramentas')">
+      <div class="cat-icon">🔨</div>
+      <span class="cat-name">Ferramentas</span>
+      <span class="cat-count">+340 itens</span>
+    </a>
+    <a class="cat-card" href="#produtos" onclick="filterCat('Revestimentos')">
+      <div class="cat-icon">🪟</div>
+      <span class="cat-name">Revestimentos</span>
+      <span class="cat-count">+210 itens</span>
+    </a>
+    <a class="cat-card" href="#produtos" onclick="filterCat('Hidráulica')">
+      <div class="cat-icon">🚿</div>
+      <span class="cat-name">Hidráulica</span>
+      <span class="cat-count">+180 itens</span>
+    </a>
+    <a class="cat-card" href="#produtos" onclick="filterCat('Elétrica')">
+      <div class="cat-icon">⚡</div>
+      <span class="cat-name">Elétrica</span>
+      <span class="cat-count">+250 itens</span>
+    </a>
+    <a class="cat-card" href="#produtos" onclick="filterCat('Tintas')">
+      <div class="cat-icon">🎨</div>
+      <span class="cat-name">Tintas</span>
+      <span class="cat-count">+90 itens</span>
+    </a>
+    <a class="cat-card" href="#produtos" onclick="filterCat('Madeiras')">
+      <div class="cat-icon">🪵</div>
+      <span class="cat-name">Madeiras</span>
+      <span class="cat-count">+150 itens</span>
+    </a>
+  </div>
+</section>
+
+<!-- PRODUCTS -->
+<section class="products-section" id="produtos">
+  <div class="section-header">
+    <h2 class="section-title">Produtos <span>populares</span></h2>
+    <a href="#" class="view-all">Ver todos</a>
+  </div>
+  <div class="filter-bar">
+    <span class="filter-label">Ordenar:</span>
+    <button class="filter-chip active" onclick="setFilter(this,'relevancia')">Relevância</button>
+    <button class="filter-chip" onclick="setFilter(this,'menor')">Menor preço</button>
+    <button class="filter-chip" onclick="setFilter(this,'maior')">Maior preço</button>
+    <button class="filter-chip" onclick="setFilter(this,'avaliacao')">Avaliação</button>
+  </div>
+  <div class="products-grid" id="productsGrid"></div>
+</section>
+
+<!-- PROMO BANNER -->
+<div class="promo-banner">
+  <div class="promo-content">
+    <span class="promo-tag">Oferta Especial</span>
+    <h2>Projetos grandes merecem<br><em>preços menores</em></h2>
+    <p>Compras acima de R$ 1.000 ganham frete grátis para Natal e Grande Natal. Aproveite nossos pacotes para construtoras!</p>
+    <a href="#contato" class="btn-primary">Solicitar orçamento →</a>
+  </div>
+  <div class="promo-visual">
+    <div class="promo-stat-card">
+      <strong>5%</strong>
+      <span>Desconto Pix</span>
+    </div>
+    <div class="promo-stat-card">
+      <strong>10x</strong>
+      <span>Sem juros</span>
+    </div>
+    <div class="promo-stat-card">
+      <strong>24h</strong>
+      <span>Entrega RN</span>
+    </div>
+  </div>
+</div>
+
+<!-- BRANDS -->
+<section class="brands-section">
+  <div class="section-header">
+    <h2 class="section-title">Marcas que <span>trabalhamos</span></h2>
+  </div>
+  <div class="brands-grid">
+    <div class="brand-pill">Votoran</div>
+    <div class="brand-pill">Bosch</div>
+    <div class="brand-pill">Tigre</div>
+    <div class="brand-pill">Portobello</div>
+    <div class="brand-pill">Sika</div>
+    <div class="brand-pill">Schneider</div>
+    <div class="brand-pill">Votorantim</div>
+    <div class="brand-pill">Atlas</div>
+    <div class="brand-pill">Tramontina</div>
+    <div class="brand-pill">Deca</div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="services-section" id="servicos">
+  <div class="section-header">
+    <h2 class="section-title">Nossos <span>serviços</span></h2>
+  </div>
+  <div class="services-grid">
+    <div class="service-card">
+      <div class="service-icon">🚚</div>
+      <h3>Entrega no RN</h3>
+      <p>Entregamos em toda Natal, Mossoró e demais cidades do Rio Grande do Norte com prazo garantido.</p>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">📐</div>
+      <h3>Orçamento Técnico</h3>
+      <p>Nossa equipe especializada calcula o material necessário para sua obra, evitando desperdícios.</p>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">🏢</div>
+      <h3>Atendimento B2B</h3>
+      <p>Condições especiais para construtoras, empreiteiras e profissionais da construção civil.</p>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">💳</div>
+      <h3>Crédito Facilitado</h3>
+      <p>Parcelamento em até 12x no cartão ou crédito especial para compras acima de R$ 5.000.</p>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials">
+  <div class="section-header">
+    <h2 class="section-title">O que nossos <span>clientes dizem</span></h2>
+  </div>
+  <div class="testimonials-grid">
+    <div class="testimonial-card">
+      <div class="testimonial-stars">★★★★★</div>
+      <p class="testimonial-text">"Comprei cimento e argamassa para minha obra. Chegou em dois dias, tudo em perfeito estado. Preço justo e atendimento excelente!"</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">JC</div>
+        <div class="author-info">
+          <strong>João Carlos</strong>
+          <span>Mestre de obras — Natal/RN</span>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="testimonial-stars">★★★★★</div>
+      <p class="testimonial-text">"A EGS virou minha fornecedora principal. Variedade enorme, site fácil de usar e entregam na hora certa. Recomendo muito!"</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">AS</div>
+        <div class="author-info">
+          <strong>Ana Santos</strong>
+          <span>Engenheira civil — Parnamirim/RN</span>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="testimonial-stars">★★★★☆</div>
+      <p class="testimonial-text">"Pedi orçamento online e recebi resposta em menos de 1 hora. Acabei economizando bastante comparado às outras lojas da cidade."</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">MF</div>
+        <div class="author-info">
+          <strong>Marcos Ferreira</strong>
+          <span>Autônomo — Macaíba/RN</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="contato">
+  <h2>Receba as melhores <span>ofertas</span></h2>
+  <p>Cadastre seu e-mail e fique por dentro das promoções e novidades da EGS Materiais de Construção.</p>
+  <div class="cta-form">
+    <input type="email" placeholder="seu@email.com">
+    <button onclick="subscribe()">Cadastrar</button>
+  </div>
+  <p style="margin-top:2rem;font-size:0.85rem;color:var(--gray)">📱 WhatsApp: (84) 99999-0000 &nbsp;|&nbsp; 📧 contato@egs.com.br &nbsp;|&nbsp; 🏪 Natal/RN</p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <span class="logo">EGS<span>.</span></span>
+      <p>Materiais de construção com qualidade, variedade e preço justo para sua obra no Rio Grande do Norte.</p>
+      <div class="footer-socials">
+        <a class="social-btn" href="#">in</a>
+        <a class="social-btn" href="#">ig</a>
+        <a class="social-btn" href="#">fb</a>
+        <a class="social-btn" href="#">yt</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Produtos</h4>
+      <ul>
+        <li><a href="#">Cimento e Argamassa</a></li>
+        <li><a href="#">Ferramentas</a></li>
+        <li><a href="#">Revestimentos</a></li>
+        <li><a href="#">Hidráulica</a></li>
+        <li><a href="#">Elétrica</a></li>
+        <li><a href="#">Tintas</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Empresa</h4>
+      <ul>
+        <li><a href="#">Sobre nós</a></li>
+        <li><a href="#">Blog</a></li>
+        <li><a href="#">Trabalhe conosco</a></li>
+        <li><a href="#">Parcerias</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Suporte</h4>
+      <ul>
+        <li><a href="#">Central de ajuda</a></li>
+        <li><a href="#">Rastrear pedido</a></li>
+        <li><a href="#">Política de troca</a></li>
+        <li><a href="#">Fale conosco</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 EGS Materiais de Construção — CNPJ: 00.000.000/0001-00 — Natal/RN</p>
+    <div class="footer-payments">
+      <span class="payment-badge">PIX</span>
+      <span class="payment-badge">Visa</span>
+      <span class="payment-badge">Master</span>
+      <span class="payment-badge">Boleto</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+const products=[
+  {id:1,name:'Cimento CP II 50kg',cat:'Cimento',icon:'🧱',price:42.90,old:48.00,badge:'Mais vendido',rating:4.8,reviews:312},
+  {id:2,name:'Furadeira de Impacto 650W',cat:'Ferramentas',icon:'🔧',price:289.00,old:349.00,badge:'Promo',rating:4.7,reviews:98},
+  {id:3,name:'Azulejo 60x60cm Cx/4un',cat:'Revestimentos',icon:'🪟',price:89.90,old:null,badge:'Novo',rating:4.6,reviews:45},
+  {id:4,name:'Tijolo Cerâmico 9 furos',cat:'Cimento',icon:'🏗️',price:0.89,old:null,badge:null,rating:4.5,reviews:201,unit:'un'},
+  {id:5,name:'Cabo Flex 2,5mm 100m',cat:'Elétrica',icon:'⚡',price:189.00,old:220.00,badge:'Promo',rating:4.9,reviews:67},
+  {id:6,name:'Tinta Acrílica 18L',cat:'Tintas',icon:'🎨',price:149.90,old:null,badge:null,rating:4.4,reviews:134},
+  {id:7,name:'Tubo PVC Esgoto 100mm 6m',cat:'Hidráulica',icon:'🚿',price:64.50,old:72.00,badge:null,rating:4.6,reviews:89},
+  {id:8,name:'Serra Circular 1.400W',cat:'Ferramentas',icon:'🪚',price:459.00,old:520.00,badge:'Promo',rating:4.8,reviews:56},
+];
+
+let cart=[];
+
+function renderProducts(prods){
+  const grid=document.getElementById('productsGrid');
+  grid.innerHTML=prods.map(p=>`
+    <div class="product-card">
+      <div class="product-img">
+        ${p.badge?`<span class="product-badge ${p.badge==='Novo'?'novo':p.badge==='Promo'?'promo':''}">${p.badge}</span>`:''}
+        ${p.icon}
+      </div>
+      <div class="product-info">
+        <span class="product-cat">${p.cat}</span>
+        <div class="product-name">${p.name}</div>
+        <div class="product-rating">
+          <span class="stars">${'★'.repeat(Math.floor(p.rating))}${'☆'.repeat(5-Math.floor(p.rating))}</span>
+          <span>${p.rating} (${p.reviews})</span>
+        </div>
+        <div class="product-price-row">
+          <div class="product-price">
+            ${p.old?`<span class="price-old">R$ ${p.old.toFixed(2).replace('.',',')}</span>`:''}
+            <span class="price-new">R$ ${p.price.toFixed(2).replace('.',',')} <span class="price-unit">${p.unit||''}</span></span>
+          </div>
+          <button class="btn-add" id="btn-${p.id}" onclick="addToCart(${p.id})">+</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function addToCart(id){
+  const p=products.find(x=>x.id===id);
+  const existing=cart.find(x=>x.id===id);
+  if(existing) existing.qty++;
+  else cart.push({...p,qty:1});
+  updateCartUI();
+  const btn=document.getElementById('btn-'+id);
+  btn.textContent='✓'; btn.classList.add('added');
+  setTimeout(()=>{btn.textContent='+';btn.classList.remove('added')},1200);
+  showToast(`${p.name} adicionado!`);
+}
+
+function updateCartUI(){
+  document.getElementById('cartCount').textContent=cart.reduce((s,i)=>s+i.qty,0);
+  const total=cart.reduce((s,i)=>s+i.price*i.qty,0);
+  document.getElementById('cartTotal').textContent='R$ '+total.toFixed(2).replace('.',',');
+  const itemsEl=document.getElementById('cartItems');
+  if(cart.length===0){
+    itemsEl.innerHTML='<div class="cart-empty"><div>🧱</div><p>Seu carrinho está vazio.<br>Adicione produtos para começar!</p></div>';
+    return;
+  }
+  itemsEl.innerHTML=cart.map(i=>`
+    <div class="cart-item">
+      <div class="cart-item-icon">${i.icon}</div>
+      <div class="cart-item-details">
+        <strong>${i.name}</strong>
+        <span>Qtd: ${i.qty}</span>
+        <button class="cart-item-remove" onclick="removeFromCart(${i.id})">✕ Remover</button>
+      </div>
+      <div class="cart-item-price">R$ ${(i.price*i.qty).toFixed(2).replace('.',',')}</div>
+    </div>
+  `).join('');
+}
+
+function removeFromCart(id){
+  cart=cart.filter(x=>x.id!==id);
+  updateCartUI();
+}
+
+function openCart(){document.getElementById('cartOverlay').classList.add('open')}
+function closeCart(){document.getElementById('cartOverlay').classList.remove('open')}
+function closeCartIfOutside(e){if(e.target===document.getElementById('cartOverlay'))closeCart()}
+
+function checkout(){
+  if(cart.length===0){alert('Adicione produtos ao carrinho primeiro!');return;}
+  alert('🎉 Pedido realizado com sucesso!\nEntraremos em contato em breve para confirmar.');
+  cart=[];updateCartUI();closeCart();
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent='✓ '+msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+function setFilter(btn,type){
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  let sorted=[...products];
+  if(type==='menor')sorted.sort((a,b)=>a.price-b.price);
+  else if(type==='maior')sorted.sort((a,b)=>b.price-a.price);
+  else if(type==='avaliacao')sorted.sort((a,b)=>b.rating-a.rating);
+  renderProducts(sorted);
+}
+
+function filterCat(cat){
+  document.querySelectorAll('.cat-card').forEach(c=>c.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  const filtered=cat==='Todos'?products:products.filter(p=>p.cat===cat);
+  renderProducts(filtered);
+}
+
+function subscribe(){
+  const input=document.querySelector('.cta-form input');
+  if(!input.value||!input.value.includes('@')){alert('Por favor, insira um e-mail válido.');return;}
+  showToast('E-mail cadastrado com sucesso!');
+  input.value='';
+}
+
+function openMobile(){document.getElementById('mobileMenu').classList.add('open')}
+function closeMobile(){document.getElementById('mobileMenu').classList.remove('open')}
+
+renderProducts(products);
+</script>
+</body>
+</html>
