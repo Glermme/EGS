@@ -233,6 +233,49 @@ footer{background:var(--charcoal);color:#aaa;padding:3rem 5% 1.5rem}
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--charcoal);color:var(--white);padding:0.8rem 1.5rem;border-radius:8px;font-size:0.9rem;z-index:999;transition:transform .4s;border-left:3px solid var(--orange)}
 .toast.show{transform:translateX(-50%) translateY(0)}
 
+/* CHECKOUT MODAL */
+.checkout-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:300;align-items:center;justify-content:center;padding:1rem}
+.checkout-overlay.open{display:flex}
+.checkout-modal{background:var(--white);border-radius:16px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,0.2)}
+.checkout-header{padding:1.5rem 1.8rem;border-bottom:1px solid var(--gray-mid);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--white);z-index:1}
+.checkout-header h3{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700}
+.checkout-close{background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--gray)}
+.checkout-body{padding:1.8rem}
+.checkout-summary{background:var(--gray-light);border-radius:10px;padding:1rem 1.2rem;margin-bottom:1.5rem}
+.checkout-summary-title{font-size:0.75rem;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.6rem}
+.checkout-summary-items{font-size:0.88rem;color:var(--charcoal);margin-bottom:0.5rem}
+.checkout-summary-total{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;color:var(--orange)}
+.checkout-section{margin-bottom:1.4rem}
+.checkout-section-title{font-family:'Syne',sans-serif;font-size:0.85rem;font-weight:700;color:var(--charcoal);margin-bottom:0.8rem;padding-bottom:0.4rem;border-bottom:1px solid var(--gray-mid)}
+.checkout-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem}
+.checkout-grid.full{grid-template-columns:1fr}
+.checkout-field{display:flex;flex-direction:column;gap:4px}
+.checkout-field label{font-size:0.78rem;color:var(--gray);font-weight:500}
+.checkout-field input,.checkout-field select{padding:0.7rem 0.9rem;border:1.5px solid var(--gray-mid);border-radius:8px;font-size:0.9rem;font-family:'DM Sans',sans-serif;color:var(--charcoal);outline:none;transition:border .2s;background:var(--white)}
+.checkout-field input:focus,.checkout-field select:focus{border-color:var(--orange)}
+.checkout-field input.error{border-color:#E24B4A}
+.payment-tabs{display:flex;gap:0;border:1.5px solid var(--gray-mid);border-radius:8px;overflow:hidden;margin-bottom:1.2rem}
+.payment-tab{flex:1;padding:0.65rem;text-align:center;font-size:0.82rem;font-weight:500;cursor:pointer;border:none;background:var(--white);transition:all .2s;font-family:'DM Sans',sans-serif;color:var(--gray)}
+.payment-tab.active{background:var(--orange);color:var(--white)}
+.payment-panel{display:none}.payment-panel.active{display:block}
+.pix-info{background:var(--orange-light);border:1px solid rgba(232,80,10,0.2);border-radius:10px;padding:1.2rem;text-align:center}
+.pix-qr{width:180px;height:180px;margin:1rem auto;background:var(--gray-mid);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.8rem;color:var(--gray)}
+.pix-qr img{width:100%;height:100%;border-radius:8px}
+.pix-code{background:var(--white);border:1px solid var(--gray-mid);border-radius:6px;padding:0.6rem;font-size:0.72rem;word-break:break-all;color:var(--gray);margin-top:0.8rem;cursor:pointer}
+.installments-select{width:100%;padding:0.7rem 0.9rem;border:1.5px solid var(--gray-mid);border-radius:8px;font-size:0.9rem;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:1rem}
+.installments-select:focus{border-color:var(--orange)}
+.btn-pay{width:100%;background:var(--orange);color:var(--white);border:none;padding:1rem;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;transition:all .25s;margin-top:0.5rem;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-pay:hover{background:var(--orange-dark)}
+.btn-pay:disabled{background:var(--gray);cursor:not-allowed}
+.btn-pay .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:var(--white);border-radius:50%;animation:spin .7s linear infinite}
+.checkout-success{text-align:center;padding:2rem}
+.checkout-success .success-icon{font-size:4rem;margin-bottom:1rem}
+.checkout-success h3{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:700;margin-bottom:0.5rem;color:var(--charcoal)}
+.checkout-success p{color:var(--gray);font-size:0.9rem;line-height:1.6}
+.checkout-error{background:#FFF0F0;border:1px solid #FFCCCC;border-radius:8px;padding:0.8rem 1rem;margin-bottom:1rem;font-size:0.85rem;color:#C0392B;display:none}
+.checkout-error.show{display:block}
+.secure-badge{display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.75rem;color:var(--gray);margin-top:1rem}
+
 @media(max-width:900px){
   .hero{grid-template-columns:1fr;min-height:auto;padding:3rem 5%}
   .hero::before{display:none}.hero-visual{display:none}
@@ -292,9 +335,9 @@ footer{background:var(--charcoal);color:#aaa;padding:3rem 5% 1.5rem}
 
 <section class="hero">
   <div class="hero-content">
-    <div class="hero-badge">⚡ Entrega expressa em Franca e região</div>
+    <div class="hero-badge">⚡ Entrega expressa em Natal e região</div>
     <h1>Construa com<br><em>qualidade</em> e<br>confiança</h1>
-    <p>Tudo para sua obra em um só lugar. Cimento, tijolos, ferramentas, acabamentos e muito mais com os melhores preços de SP.</p>
+    <p>Tudo para sua obra em um só lugar. Cimento, tijolos, ferramentas, acabamentos e muito mais com os melhores preços do RN.</p>
     <div class="hero-ctas">
       <a href="#produtos" class="btn-primary">Ver Produtos →</a>
       <a href="#contato" class="btn-secondary">Fale Conosco</a>
@@ -399,9 +442,9 @@ footer{background:var(--charcoal);color:#aaa;padding:3rem 5% 1.5rem}
 <section class="testimonials">
   <div class="section-header"><h2 class="section-title">O que nossos <span>clientes dizem</span></h2></div>
   <div class="testimonials-grid">
-    <div class="testimonial-card"><div class="testimonial-stars">★★★★★</div><p class="testimonial-text">"Comprei cimento e argamassa para minha obra. Chegou em poucas horas, tudo em perfeito estado. Preço justo e atendimento excelente!"</p><div class="testimonial-author"><div class="author-avatar">JC</div><div class="author-info"><strong>João Carlos</strong><span>Mestre de obras — Franca/SP</span></div></div></div>
-    <div class="testimonial-card"><div class="testimonial-stars">★★★★★</div><p class="testimonial-text">"A EGS virou minha fornecedora principal. Variedade enorme, site fácil de usar e entregam na hora certa. Recomendo muito!"</p><div class="testimonial-author"><div class="author-avatar">AS</div><div class="author-info"><strong>Ana Santos</strong><span>Engenheira civil — Franca/SP</span></div></div></div>
-    <div class="testimonial-card"><div class="testimonial-stars">★★★★☆</div><p class="testimonial-text">"Pedi orçamento online e recebi resposta em menos de 1 hora. Acabei economizando bastante comparado às outras lojas da cidade."</p><div class="testimonial-author"><div class="author-avatar">MF</div><div class="author-info"><strong>Marcos Ferreira</strong><span>Autônomo — Franca/SP</span></div></div></div>
+    <div class="testimonial-card"><div class="testimonial-stars">★★★★★</div><p class="testimonial-text">"Comprei cimento e argamassa para minha obra. Chegou em dois dias, tudo em perfeito estado. Preço justo e atendimento excelente!"</p><div class="testimonial-author"><div class="author-avatar">JC</div><div class="author-info"><strong>João Carlos</strong><span>Mestre de obras — Natal/RN</span></div></div></div>
+    <div class="testimonial-card"><div class="testimonial-stars">★★★★★</div><p class="testimonial-text">"A EGS virou minha fornecedora principal. Variedade enorme, site fácil de usar e entregam na hora certa. Recomendo muito!"</p><div class="testimonial-author"><div class="author-avatar">AS</div><div class="author-info"><strong>Ana Santos</strong><span>Engenheira civil — Parnamirim/RN</span></div></div></div>
+    <div class="testimonial-card"><div class="testimonial-stars">★★★★☆</div><p class="testimonial-text">"Pedi orçamento online e recebi resposta em menos de 1 hora. Acabei economizando bastante comparado às outras lojas da cidade."</p><div class="testimonial-author"><div class="author-avatar">MF</div><div class="author-info"><strong>Marcos Ferreira</strong><span>Autônomo — Macaíba/RN</span></div></div></div>
   </div>
 </section>
 
@@ -409,15 +452,17 @@ footer{background:var(--charcoal);color:#aaa;padding:3rem 5% 1.5rem}
   <h2>Receba as melhores <span>ofertas</span></h2>
   <p>Cadastre seu e-mail e fique por dentro das promoções e novidades da EGS Materiais de Construção.</p>
   <div class="cta-form"><input type="email" placeholder="seu@email.com" id="ctaEmail"><button onclick="subscribe()">Cadastrar</button></div>
-  <p style="margin-top:2rem;font-size:0.85rem;color:var(--gray)">📱 WhatsApp: (16) 98803-8111 &nbsp;|&nbsp; 📧 egsmaeriaisparaconstrucao@gmail.com &nbsp;|&nbsp; 🏪 Franca/SP</p>
+  <p style="margin-top:2rem;font-size:0.85rem;color:var(--gray)">📱 WhatsApp: (84) 99999-0000 &nbsp;|&nbsp; 📧 contato@egs.com.br &nbsp;|&nbsp; 🏪 Natal/RN</p>
 </section>
 
 <footer>
   <div class="footer-grid">
     <div class="footer-brand">
       <span class="logo">EGS<span>.</span></span>
-      <p>Materiais de construção com qualidade, variedade e preço justo para sua obra!.</p>
+      <p>Materiais de construção com qualidade, variedade e preço justo para sua obra no Rio Grande do Norte.</p>
       <div class="footer-socials">
+        <a class="social-btn" href="#">in</a><a class="social-btn" href="#">ig</a>
+        <a class="social-btn" href="#">fb</a><a class="social-btn" href="#">yt</a>
       </div>
     </div>
     <div class="footer-col"><h4>Produtos</h4><ul><li><a href="#">Cimento e Argamassa</a></li><li><a href="#">Ferramentas</a></li><li><a href="#">Revestimentos</a></li><li><a href="#">Hidráulica</a></li><li><a href="#">Elétrica</a></li><li><a href="#">Tintas</a></li></ul></div>
@@ -425,7 +470,7 @@ footer{background:var(--charcoal);color:#aaa;padding:3rem 5% 1.5rem}
     <div class="footer-col"><h4>Suporte</h4><ul><li><a href="#">Central de ajuda</a></li><li><a href="#">Rastrear pedido</a></li><li><a href="#">Política de troca</a></li><li><a href="#">Fale conosco</a></li></ul></div>
   </div>
   <div class="footer-bottom">
-    <p>© 2025 EGS Materiais de Construção — CNPJ: 20.322.710/0001-45 — Franca/SP</p>
+    <p>© 2025 EGS Materiais de Construção — CNPJ: 00.000.000/0001-00 — Natal/RN</p>
     <div class="footer-payments"><span class="payment-badge">PIX</span><span class="payment-badge">Visa</span><span class="payment-badge">Master</span><span class="payment-badge">Boleto</span></div>
   </div>
 </footer>
@@ -440,7 +485,7 @@ footer{background:var(--charcoal);color:#aaa;padding:3rem 5% 1.5rem}
    4. Cole abaixo substituindo o texto entre aspas
    ================================================================ */
 
-const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS9xsDPljT5lsRI02CVsXiqXAAP1Bz5gadB9vlyG3rhfAL-YgjXaOjJz3NaFJZcZ0mmqXCQEyXpezac/pub?output=csv";
+const SHEET_URL = "COLE_O_LINK_DA_PLANILHA_AQUI";
 
 /* ================================================================
    MODELO DA PLANILHA — 1ª linha com esses cabeçalhos exatos:
@@ -661,8 +706,8 @@ function closeCart(){document.getElementById('cartOverlay').classList.remove('op
 function closeCartIfOutside(e){if(e.target===document.getElementById('cartOverlay'))closeCart()}
 function checkout(){
   if(!cart.length){alert('Adicione produtos ao carrinho primeiro!');return}
-  alert('🎉 Pedido realizado com sucesso!\nEntraremos em contato em breve para confirmar.');
-  cart=[];updateCartUI();closeCart();
+  closeCart();
+  openCheckout();
 }
 
 function showToast(msg){const t=document.getElementById('toast');t.textContent='✓ '+msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
@@ -708,6 +753,360 @@ async function loadSheet(){
 }
 
 loadSheet();
+</script>
+<!-- CHECKOUT MODAL -->
+<div class="checkout-overlay" id="checkoutOverlay" onclick="closeCheckoutOutside(event)">
+  <div class="checkout-modal" id="checkoutModal">
+    <div class="checkout-header">
+      <h3>🔒 Finalizar Pedido</h3>
+      <button class="checkout-close" onclick="closeCheckout()">✕</button>
+    </div>
+    <div class="checkout-body" id="checkoutBody">
+
+      <!-- RESUMO -->
+      <div class="checkout-summary">
+        <div class="checkout-summary-title">Resumo do pedido</div>
+        <div class="checkout-summary-items" id="summaryItems"></div>
+        <div class="checkout-summary-total" id="summaryTotal"></div>
+      </div>
+
+      <!-- ERRO -->
+      <div class="checkout-error" id="checkoutError"></div>
+
+      <!-- DADOS PESSOAIS -->
+      <div class="checkout-section">
+        <div class="checkout-section-title">📋 Dados pessoais</div>
+        <div class="checkout-grid" style="margin-bottom:0.8rem">
+          <div class="checkout-field">
+            <label>Nome completo *</label>
+            <input type="text" id="ckName" placeholder="João da Silva">
+          </div>
+          <div class="checkout-field">
+            <label>CPF *</label>
+            <input type="text" id="ckCpf" placeholder="000.000.000-00" maxlength="14" oninput="maskCpf(this)">
+          </div>
+        </div>
+        <div class="checkout-grid">
+          <div class="checkout-field">
+            <label>E-mail *</label>
+            <input type="email" id="ckEmail" placeholder="seu@email.com">
+          </div>
+          <div class="checkout-field">
+            <label>Telefone *</label>
+            <input type="text" id="ckPhone" placeholder="(84) 99999-0000" maxlength="15" oninput="maskPhone(this)">
+          </div>
+        </div>
+      </div>
+
+      <!-- FORMA DE PAGAMENTO -->
+      <div class="checkout-section">
+        <div class="checkout-section-title">💳 Forma de pagamento</div>
+        <div class="payment-tabs">
+          <button class="payment-tab active" onclick="setPayTab(this,'credit')">Crédito</button>
+          <button class="payment-tab" onclick="setPayTab(this,'debit')">Débito</button>
+          <button class="payment-tab" onclick="setPayTab(this,'pix')">Pix</button>
+        </div>
+
+        <!-- CARTÃO CRÉDITO -->
+        <div class="payment-panel active" id="panel-credit">
+          <select class="installments-select" id="ckInstallments"></select>
+          <div class="checkout-grid full" style="margin-bottom:0.8rem">
+            <div class="checkout-field">
+              <label>Número do cartão *</label>
+              <input type="text" id="ckCardNumber" placeholder="0000 0000 0000 0000" maxlength="19" oninput="maskCard(this)">
+            </div>
+          </div>
+          <div class="checkout-grid">
+            <div class="checkout-field">
+              <label>Validade *</label>
+              <input type="text" id="ckExpiry" placeholder="MM/AAAA" maxlength="7" oninput="maskExpiry(this)">
+            </div>
+            <div class="checkout-field">
+              <label>CVV *</label>
+              <input type="text" id="ckCvv" placeholder="123" maxlength="4">
+            </div>
+          </div>
+          <div class="checkout-field" style="margin-top:0.8rem">
+            <label>Nome no cartão *</label>
+            <input type="text" id="ckHolder" placeholder="JOÃO DA SILVA" style="text-transform:uppercase">
+          </div>
+        </div>
+
+        <!-- CARTÃO DÉBITO -->
+        <div class="payment-panel" id="panel-debit">
+          <div class="checkout-grid full" style="margin-bottom:0.8rem">
+            <div class="checkout-field">
+              <label>Número do cartão *</label>
+              <input type="text" id="ckCardNumberD" placeholder="0000 0000 0000 0000" maxlength="19" oninput="maskCard(this)">
+            </div>
+          </div>
+          <div class="checkout-grid">
+            <div class="checkout-field">
+              <label>Validade *</label>
+              <input type="text" id="ckExpiryD" placeholder="MM/AAAA" maxlength="7" oninput="maskExpiry(this)">
+            </div>
+            <div class="checkout-field">
+              <label>CVV *</label>
+              <input type="text" id="ckCvvD" placeholder="123" maxlength="4">
+            </div>
+          </div>
+          <div class="checkout-field" style="margin-top:0.8rem">
+            <label>Nome no cartão *</label>
+            <input type="text" id="ckHolderD" placeholder="JOÃO DA SILVA" style="text-transform:uppercase">
+          </div>
+        </div>
+
+        <!-- PIX -->
+        <div class="payment-panel" id="panel-pix">
+          <div class="pix-info">
+            <p style="font-size:0.88rem;color:var(--charcoal);margin-bottom:0.5rem">Após clicar em <strong>Gerar Pix</strong> aparecerá o QR Code para você escanear.</p>
+            <div class="pix-qr" id="pixQrContainer">📱 QR Code aparecerá aqui</div>
+            <div class="pix-code" id="pixCode" style="display:none" onclick="copyPix()">Clique para copiar o código Pix</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-pay" id="btnPay" onclick="submitPayment()">
+        <span id="btnPayText">🔒 Pagar agora</span>
+      </button>
+      <div class="secure-badge">🔒 Pagamento seguro via e.Rede · Itaú</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── CHECKOUT ── */
+let currentPayTab = 'credit';
+let checkoutTotal = 0;
+
+function openCheckout(){
+  // monta resumo
+  checkoutTotal = cart.reduce((s,i)=>s+parseFloat(i.preco||0)*i.qty,0);
+  document.getElementById('summaryItems').innerHTML =
+    cart.map(i=>`${i.qty}x ${i.nome||'Produto'}`).join(' · ');
+  document.getElementById('summaryTotal').textContent = 'Total: R$ '+fmt(checkoutTotal);
+
+  // monta opções de parcelas
+  buildInstallments(checkoutTotal);
+
+  // limpa estado
+  document.getElementById('checkoutError').classList.remove('show');
+  document.getElementById('pixQrContainer').innerHTML='📱 QR Code aparecerá aqui';
+  document.getElementById('pixCode').style.display='none';
+  document.getElementById('btnPayText').textContent='🔒 Pagar agora';
+  document.getElementById('btnPay').disabled=false;
+
+  document.getElementById('checkoutOverlay').classList.add('open');
+}
+
+function closeCheckout(){document.getElementById('checkoutOverlay').classList.remove('open')}
+function closeCheckoutOutside(e){if(e.target===document.getElementById('checkoutOverlay'))closeCheckout()}
+
+function setPayTab(btn, tab){
+  currentPayTab = tab;
+  document.querySelectorAll('.payment-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.payment-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');
+  document.getElementById('btnPayText').textContent =
+    tab==='pix' ? '⚡ Gerar Pix' : '🔒 Pagar agora';
+}
+
+function buildInstallments(total){
+  const sel = document.getElementById('ckInstallments');
+  sel.innerHTML = '';
+  for(let i=1;i<=12;i++){
+    const v = (total/i).toFixed(2).replace('.',',');
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = i===1 ? `À vista — R$ ${v}` : `${i}x de R$ ${v} sem juros`;
+    sel.appendChild(opt);
+  }
+}
+
+/* ── MÁSCARAS ── */
+function maskCpf(el){
+  let v=el.value.replace(/\D/g,'');
+  if(v.length>11)v=v.slice(0,11);
+  v=v.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+  el.value=v;
+}
+function maskPhone(el){
+  let v=el.value.replace(/\D/g,'');
+  if(v.length>11)v=v.slice(0,11);
+  v=v.replace(/(\d{2})(\d)/,'($1) $2').replace(/(\d{5})(\d)/,'$1-$2');
+  el.value=v;
+}
+function maskCard(el){
+  let v=el.value.replace(/\D/g,'');
+  if(v.length>16)v=v.slice(0,16);
+  v=v.replace(/(\d{4})/g,'$1 ').trim();
+  el.value=v;
+}
+function maskExpiry(el){
+  let v=el.value.replace(/\D/g,'');
+  if(v.length>6)v=v.slice(0,6);
+  if(v.length>=2)v=v.slice(0,2)+'/'+v.slice(2);
+  el.value=v;
+}
+
+/* ── VALIDAÇÃO ── */
+function validateCheckout(){
+  const name=document.getElementById('ckName').value.trim();
+  const cpf=document.getElementById('ckCpf').value.replace(/\D/g,'');
+  const email=document.getElementById('ckEmail').value.trim();
+  const phone=document.getElementById('ckPhone').value.replace(/\D/g,'');
+
+  if(!name||name.length<3)return'Informe seu nome completo';
+  if(cpf.length!==11)return'CPF inválido';
+  if(!email.includes('@'))return'E-mail inválido';
+  if(phone.length<10)return'Telefone inválido';
+
+  if(currentPayTab!=='pix'){
+    const isCredit=currentPayTab==='credit';
+    const num=document.getElementById(isCredit?'ckCardNumber':'ckCardNumberD').value.replace(/\s/g,'');
+    const exp=document.getElementById(isCredit?'ckExpiry':'ckExpiryD').value;
+    const cvv=document.getElementById(isCredit?'ckCvv':'ckCvvD').value;
+    const hld=document.getElementById(isCredit?'ckHolder':'ckHolderD').value.trim();
+    if(num.length<16)return'Número do cartão inválido';
+    if(!exp.includes('/')||exp.length<7)return'Validade inválida';
+    if(cvv.length<3)return'CVV inválido';
+    if(!hld||hld.length<3)return'Informe o nome do titular';
+  }
+  return null;
+}
+
+function showError(msg){
+  const el=document.getElementById('checkoutError');
+  el.textContent='⚠️ '+msg;
+  el.classList.add('show');
+}
+
+/* ── SUBMETE PAGAMENTO ── */
+async function submitPayment(){
+  document.getElementById('checkoutError').classList.remove('show');
+  const err=validateCheckout();
+  if(err){showError(err);return}
+
+  const btn=document.getElementById('btnPay');
+  btn.disabled=true;
+  btn.innerHTML='<div class="spinner"></div> Processando...';
+
+  const amountCents = Math.round(checkoutTotal * 100);
+  const reference   = 'EGS-'+Date.now();
+
+  const isCredit = currentPayTab==='credit';
+  const payload  = {
+    amount:      amountCents,
+    reference,
+    kind:        currentPayTab,
+    customerName:  document.getElementById('ckName').value.trim(),
+    customerCpf:   document.getElementById('ckCpf').value.replace(/\D/g,''),
+    customerEmail: document.getElementById('ckEmail').value.trim(),
+    installments:  currentPayTab==='credit'
+                    ? parseInt(document.getElementById('ckInstallments').value)
+                    : 1,
+    cardNumber:  currentPayTab!=='pix'
+                    ? document.getElementById(isCredit?'ckCardNumber':'ckCardNumberD').value
+                    : '',
+    cardExpiry:  currentPayTab!=='pix'
+                    ? document.getElementById(isCredit?'ckExpiry':'ckExpiryD').value
+                    : '',
+    cardCvv:     currentPayTab!=='pix'
+                    ? document.getElementById(isCredit?'ckCvv':'ckCvvD').value
+                    : '',
+    cardHolder:  currentPayTab!=='pix'
+                    ? document.getElementById(isCredit?'ckHolder':'ckHolderD').value
+                    : '',
+  };
+
+  try{
+    const res  = await fetch('/api/checkout', {
+      method:  'POST',
+      headers: {'Content-Type':'application/json'},
+      body:    JSON.stringify(payload),
+    });
+    const data = await res.json();
+
+    if(!res.ok){
+      throw new Error(data.error||'Erro no servidor');
+    }
+
+    // ── PIX ──
+    if(currentPayTab==='pix'){
+      btn.disabled=false;
+      btn.innerHTML='⚡ Gerar Pix';
+      if(data.qrCodeImage){
+        document.getElementById('pixQrContainer').innerHTML=
+          `<img src="data:image/png;base64,${data.qrCodeImage}" alt="QR Code Pix">`;
+      }
+      if(data.qrCode){
+        const codeEl=document.getElementById('pixCode');
+        codeEl.textContent=data.qrCode;
+        codeEl.style.display='block';
+        window._pixCode=data.qrCode;
+      }
+      showToast('QR Code Pix gerado! Escaneie para pagar.');
+      pollPixStatus(data.tid);
+      return;
+    }
+
+    // ── CARTÃO ──
+    if(data.status==='approved'){
+      showSuccess(data);
+    } else {
+      throw new Error(data.returnMessage||'Pagamento recusado. Verifique os dados do cartão.');
+    }
+
+  }catch(err){
+    btn.disabled=false;
+    btn.innerHTML='🔒 Tentar novamente';
+    showError(err.message);
+  }
+}
+
+/* Copia código Pix */
+function copyPix(){
+  if(window._pixCode){
+    navigator.clipboard.writeText(window._pixCode)
+      .then(()=>showToast('Código Pix copiado!'))
+      .catch(()=>showToast('Selecione e copie o código manualmente'));
+  }
+}
+
+/* Polling para confirmar Pix */
+async function pollPixStatus(tid, attempts=0){
+  if(attempts>20)return; // para após ~2min
+  setTimeout(async()=>{
+    try{
+      const res  = await fetch(`/api/status?tid=${tid}`);
+      const data = await res.json();
+      if(data.status==='approved'){
+        showSuccess(data);
+      } else {
+        pollPixStatus(tid, attempts+1);
+      }
+    }catch{
+      pollPixStatus(tid, attempts+1);
+    }
+  },6000);
+}
+
+/* Tela de sucesso */
+function showSuccess(data){
+  cart=[];
+  updateCartUI();
+  document.getElementById('checkoutBody').innerHTML=`
+    <div class="checkout-success">
+      <div class="success-icon">🎉</div>
+      <h3>Pedido confirmado!</h3>
+      <p>Seu pagamento foi aprovado com sucesso.<br>
+      ${data.tid?`<strong>Código da transação:</strong> ${data.tid}<br>`:''}
+      ${data.authorizationCode?`<strong>Autorização:</strong> ${data.authorizationCode}<br>`:''}
+      Em breve entraremos em contato para confirmar a entrega.</p>
+      <button class="btn-primary" style="margin-top:1.5rem" onclick="closeCheckout()">Continuar comprando</button>
+    </div>`;
+}
 </script>
 </body>
 </html>
