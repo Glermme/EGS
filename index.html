@@ -485,7 +485,7 @@ footer{background:var(--charcoal);color:#aaa;padding:3rem 5% 1.5rem}
    4. Cole abaixo substituindo o texto entre aspas
    ================================================================ */
 
-const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS9xsDPljT5lsRI02CVsXiqXAAP1Bz5gadB9vlyG3rhfAL-YgjXaOjJz3NaFJZcZ0mmqXCQEyXpezac/pub?output=csv";
+const SHEET_URL = "COLE_O_LINK_DA_PLANILHA_AQUI";
 
 /* ================================================================
    MODELO DA PLANILHA — 1ª linha com esses cabeçalhos exatos:
@@ -535,9 +535,31 @@ function fixDrive(url){
 }
 
 function fmt(v){
-  const n=parseFloat(v);
+  // aceita qualquer formato: "42.90", "42,90", "1.234,56", "1234.56", "0.89", "0,89"
+  if(v===null||v===undefined||v==='')return'';
+  let s=String(v).trim().replace(/R\$\s*/,'');
+  // formato BR com milhar: "1.234,56" → "1234.56"
+  if(/^\d{1,3}(\.\d{3})+(,\d{0,2})?$/.test(s)){
+    s=s.replace(/\./g,'').replace(',','.');
+  } else {
+    // vírgula decimal simples: "42,90" → "42.90"
+    s=s.replace(',','.');
+  }
+  const n=parseFloat(s);
   if(isNaN(n))return'';
-  return n.toFixed(2).replace('.',',');
+  return n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+/* converte string de preço para número float, aceitando qualquer formato */
+function parsePreco(v){
+  if(!v&&v!==0)return 0;
+  let s=String(v).trim().replace(/R\$\s*/,'');
+  if(/^\d{1,3}(\.\d{3})+(,\d{0,2})?$/.test(s)){
+    s=s.replace(/\./g,'').replace(',','.');
+  } else {
+    s=s.replace(',','.');
+  }
+  return parseFloat(s)||0;
 }
 
 /* imagem com fallback para emoji */
@@ -680,7 +702,7 @@ function addToCart(id){
 
 function updateCartUI(){
   document.getElementById('cartCount').textContent=cart.reduce((s,i)=>s+i.qty,0);
-  const total=cart.reduce((s,i)=>s+parseFloat(i.preco||i.price||0)*i.qty,0);
+  const total=cart.reduce((s,i)=>s+parsePreco(i.preco||i.price||0)*i.qty,0);
   document.getElementById('cartTotal').textContent='R$ '+fmt(total);
   const el=document.getElementById('cartItems');
   if(!cart.length){el.innerHTML='<div class="cart-empty"><div>🧱</div><p>Seu carrinho está vazio.<br>Adicione produtos para começar!</p></div>';return}
@@ -695,7 +717,7 @@ function updateCartUI(){
         <span>Qtd: ${i.qty}</span>
         <button class="cart-item-remove" onclick="removeFromCart(${i._id})">✕ Remover</button>
       </div>
-      <div class="cart-item-price">R$ ${fmt(parseFloat(i.preco||i.price||0)*i.qty)}</div>
+      <div class="cart-item-price">R$ ${fmt(parsePreco(i.preco||i.price||0)*i.qty)}</div>
     </div>`;
   }).join('');
 }
@@ -732,7 +754,14 @@ function parseCSV(text){
 
 /* ── INICIALIZA ── */
 function init(data){
-  products=data.map((r,i)=>({...r,id:r.id||i+1,preco:parseFloat(r.preco||r.price)||0,preco_antigo:parseFloat(r.preco_antigo||r.old)||0,avaliacao:parseFloat(r.avaliacao||r.rating)||0,avaliacoes:parseInt(r.avaliacoes||r.reviews)||0}));
+  products=data.map((r,i)=>({
+    ...r,
+    id:r.id||i+1,
+    preco:parsePreco(r.preco||r.price),
+    preco_antigo:parsePreco(r.preco_antigo||r.old),
+    avaliacao:parseFloat(r.avaliacao||r.rating)||0,
+    avaliacoes:parseInt(r.avaliacoes||r.reviews)||0
+  }));
   renderHeroCard(products);
   renderCategories(products);
   renderProducts(products);
@@ -742,7 +771,9 @@ async function loadSheet(){
   const ok=SHEET_URL&&!SHEET_URL.includes('COLE_O_LINK');
   if(!ok){console.info('ℹ️ Usando dados de exemplo');init(EXEMPLOS);return}
   try{
-    const res=await fetch(SHEET_URL);
+    // ?t= evita cache do navegador — garante dados sempre atualizados
+    const url=SHEET_URL+(SHEET_URL.includes('?')?'&':'?')+'t='+Date.now();
+    const res=await fetch(url,{cache:'no-store'});
     if(!res.ok)throw new Error('HTTP '+res.status);
     init(parseCSV(await res.text()));
   }catch(err){
@@ -996,50 +1027,29 @@ async function submitPayment(){
   const reference   = 'EGS-'+Date.now();
 
   const isCredit = currentPayTab==='credit';
-  // ================================================================
-// INSTRUÇÃO: no seu index.html, dentro da função submitPayment(),
-// localize o objeto "payload = {" e substitua o bloco inteiro
-// pelo código abaixo.
-//
-// O que muda:
-//   + customerPhone  → telefone do cliente
-//   + city           → cidade extraída do telefone/DDD (Natal/RN como padrão)
-//   + items          → array com os itens do carrinho
-// ================================================================
-
-const payload = {
-  amount:      amountCents,
-  installments: isCredit ? parseInt(document.getElementById('ckInstallments').value) : 1,
-
-  // dados do cartão (ignorados no Pix)
-  cardNumber:  currentPayTab !== 'pix' ? document.getElementById(isCredit ? 'ckCardNumber' : 'ckCardNumberD').value : '',
-  cardExpiry:  currentPayTab !== 'pix' ? document.getElementById(isCredit ? 'ckExpiry'     : 'ckExpiryD').value     : '',
-  cardCvv:     currentPayTab !== 'pix' ? document.getElementById(isCredit ? 'ckCvv'        : 'ckCvvD').value        : '',
-  cardHolder:  currentPayTab !== 'pix' ? document.getElementById(isCredit ? 'ckHolder'     : 'ckHolderD').value     : '',
-
-  // dados do cliente
-  customerName:  document.getElementById('ckName').value.trim(),
-  customerCpf:   document.getElementById('ckCpf').value.replace(/\D/g, ''),
-  customerEmail: document.getElementById('ckEmail').value.trim(),
-  customerPhone: document.getElementById('ckPhone').value.trim(),   // ← NOVO
-
-  // cidade — pega do DDD do telefone; ajuste conforme necessidade
-  city: (() => {
-    const ddd = document.getElementById('ckPhone').value.replace(/\D/g, '').slice(0, 2);
-    const ddds = { '84': 'Natal/RN', '83': 'João Pessoa/PB', '85': 'Fortaleza/CE', '86': 'Teresina/PI' };
-    return ddds[ddd] || 'Natal/RN';
-  })(),                                                              // ← NOVO
-
-  // itens do carrinho
-  items: cart.map(i => ({                                           // ← NOVO
-    name:  i.nome || i.name || 'Produto',
-    qty:   i.qty,
-    price: parseFloat(i.preco || i.price || 0).toFixed(2),
-  })),
-
-  kind:      currentPayTab,
-  reference: reference,
-};
+  const payload  = {
+    amount:      amountCents,
+    reference,
+    kind:        currentPayTab,
+    customerName:  document.getElementById('ckName').value.trim(),
+    customerCpf:   document.getElementById('ckCpf').value.replace(/\D/g,''),
+    customerEmail: document.getElementById('ckEmail').value.trim(),
+    installments:  currentPayTab==='credit'
+                    ? parseInt(document.getElementById('ckInstallments').value)
+                    : 1,
+    cardNumber:  currentPayTab!=='pix'
+                    ? document.getElementById(isCredit?'ckCardNumber':'ckCardNumberD').value
+                    : '',
+    cardExpiry:  currentPayTab!=='pix'
+                    ? document.getElementById(isCredit?'ckExpiry':'ckExpiryD').value
+                    : '',
+    cardCvv:     currentPayTab!=='pix'
+                    ? document.getElementById(isCredit?'ckCvv':'ckCvvD').value
+                    : '',
+    cardHolder:  currentPayTab!=='pix'
+                    ? document.getElementById(isCredit?'ckHolder':'ckHolderD').value
+                    : '',
+  };
 
   try{
     const res  = await fetch('/api/checkout', {
