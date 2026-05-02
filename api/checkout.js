@@ -196,7 +196,7 @@ export default async function handler(req, res) {
         installments:   Number(installments) || 1,
         tid:            cardData.tid              || null,
         nsu:            cardData.nsu              || null,
-        authorization:  cardData.authorizationCode || null,
+        auth_code: cardData.authorizationCode || null,
         items:          items || [],
         created_at:     new Date().toISOString(),
       });
