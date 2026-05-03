@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EGS Admin — Painel de Pedidos</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   SUPABASE — CONFIGURE AQUI
+   ============================================================
+   Após criar sua conta no Supabase:
+   1. Acesse app.supabase.com → seu projeto
+   2. Settings → API
+   3. Copie "Project URL" e cole em SUPABASE_URL abaixo
+   4. Copie "anon public key" e cole em SUPABASE_KEY abaixo
+   ============================================================ */
+
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0A0A08;
+  --bg2:#111110;
+  --bg3:#1A1A17;
+  --border:#2A2A26;
+  --border2:#333330;
+  --orange:#E8500A;
+  --orange-dim:rgba(232,80,10,0.15);
+  --orange-glow:rgba(232,80,10,0.08);
+  --white:#F5F4F0;
+  --gray:#7A7A70;
+  --gray2:#5A5A55;
+  --green:#1D9E75;
+  --green-dim:rgba(29,158,117,0.15);
+  --red:#E24B4A;
+  --red-dim:rgba(226,75,74,0.15);
+  --yellow:#E8B50A;
+  --yellow-dim:rgba(232,181,10,0.15);
+  --blue:#3A8AE8;
+  --blue-dim:rgba(58,138,232,0.15);
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--white);min-height:100vh;overflow-x:hidden}
+
+/* ── LOGIN ── */
+.login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000;flex-direction:column;gap:0}
+.login-screen.hidden{display:none}
+.login-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.login-bg::before{content:'';position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(232,80,10,0.06) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)}
+.login-grid{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:48px 48px;opacity:0.4}
+.login-box{position:relative;z-index:1;width:100%;max-width:400px;padding:2rem}
+.login-logo{font-family:'Space Mono',monospace;font-size:2rem;font-weight:700;color:var(--white);letter-spacing:-1px;margin-bottom:0.3rem}
+.login-logo span{color:var(--orange)}
+.login-subtitle{font-size:0.78rem;color:var(--gray);letter-spacing:2px;text-transform:uppercase;margin-bottom:2.5rem}
+.login-form{display:flex;flex-direction:column;gap:1rem}
+.login-field{display:flex;flex-direction:column;gap:6px}
+.login-field label{font-size:0.72rem;color:var(--gray);letter-spacing:1.5px;text-transform:uppercase}
+.login-field input{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:0.85rem 1rem;font-size:0.95rem;color:var(--white);font-family:'DM Sans',sans-serif;outline:none;transition:border .2s}
+.login-field input:focus{border-color:var(--orange)}
+.login-field input::placeholder{color:var(--gray2)}
+.login-btn{background:var(--orange);color:var(--white);border:none;padding:0.9rem;border-radius:6px;font-size:0.9rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;margin-top:0.5rem;letter-spacing:0.5px}
+.login-btn:hover{background:#d04508;transform:translateY(-1px)}
+.login-error{background:var(--red-dim);border:1px solid var(--red);border-radius:6px;padding:0.7rem 1rem;font-size:0.83rem;color:var(--red);display:none}
+.login-error.show{display:block}
+.login-version{font-family:'Space Mono',monospace;font-size:0.65rem;color:var(--gray2);text-align:center;margin-top:2rem;letter-spacing:1px}
+
+/* ── DASHBOARD ── */
+.dashboard{display:none}
+.dashboard.visible{display:block}
+
+/* SIDEBAR */
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:50}
+.sidebar-logo{padding:1.5rem 1.4rem;border-bottom:1px solid var(--border)}
+.sidebar-logo .logo{font-family:'Space Mono',monospace;font-size:1.2rem;font-weight:700;color:var(--white)}
+.sidebar-logo .logo span{color:var(--orange)}
+.sidebar-logo .logo-sub{font-size:0.62rem;color:var(--gray);letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+.sidebar-nav{flex:1;padding:1rem 0}
+.nav-item{display:flex;align-items:center;gap:10px;padding:0.7rem 1.4rem;cursor:pointer;transition:all .2s;border-left:2px solid transparent;font-size:0.88rem;color:var(--gray);text-decoration:none}
+.nav-item:hover{color:var(--white);background:rgba(255,255,255,0.03)}
+.nav-item.active{color:var(--white);border-left-color:var(--orange);background:var(--orange-glow)}
+.nav-icon{font-size:1rem;width:20px;text-align:center}
+.sidebar-footer{padding:1rem 1.4rem;border-top:1px solid var(--border)}
+.sidebar-user{font-size:0.78rem;color:var(--gray);margin-bottom:0.6rem}
+.logout-btn{background:none;border:1px solid var(--border2);color:var(--gray);padding:0.5rem 1rem;border-radius:4px;font-size:0.78rem;cursor:pointer;width:100%;font-family:'DM Sans',sans-serif;transition:all .2s}
+.logout-btn:hover{border-color:var(--red);color:var(--red)}
+
+/* MAIN */
+.main{margin-left:220px;min-height:100vh;padding:2rem 2.5rem}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem}
+.page-title{font-family:'Space Mono',monospace;font-size:1.1rem;font-weight:700;color:var(--white)}
+.page-title span{color:var(--orange)}
+.topbar-right{display:flex;align-items:center;gap:1rem}
+.refresh-btn{background:var(--bg3);border:1px solid var(--border2);color:var(--gray);padding:0.5rem 1rem;border-radius:6px;font-size:0.8rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;display:flex;align-items:center;gap:6px}
+.refresh-btn:hover{border-color:var(--orange);color:var(--orange)}
+.live-badge{display:flex;align-items:center;gap:6px;font-size:0.72rem;color:var(--green);letter-spacing:1px;text-transform:uppercase}
+.live-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}
+
+/* KPI CARDS */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
+.kpi-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.4rem;position:relative;overflow:hidden;transition:border .2s}
+.kpi-card:hover{border-color:var(--border2)}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kpi-card.orange::before{background:var(--orange)}
+.kpi-card.green::before{background:var(--green)}
+.kpi-card.blue::before{background:var(--blue)}
+.kpi-card.yellow::before{background:var(--yellow)}
+.kpi-label{font-size:0.68rem;color:var(--gray);letter-spacing:2px;text-transform:uppercase;margin-bottom:0.8rem}
+.kpi-value{font-family:'Space Mono',monospace;font-size:1.8rem;font-weight:700;color:var(--white);line-height:1;margin-bottom:0.4rem}
+.kpi-sub{font-size:0.75rem;color:var(--gray)}
+
+/* FILTERS */
+.filters-bar{display:flex;gap:0.8rem;margin-bottom:1.5rem;flex-wrap:wrap;align-items:center}
+.filter-input{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:0.6rem 1rem;font-size:0.85rem;color:var(--white);font-family:'DM Sans',sans-serif;outline:none;transition:border .2s}
+.filter-input:focus{border-color:var(--orange)}
+.filter-input::placeholder{color:var(--gray2)}
+.filter-input.search{min-width:240px}
+.filter-select{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:0.6rem 1rem;font-size:0.85rem;color:var(--white);font-family:'DM Sans',sans-serif;outline:none;cursor:pointer}
+.filter-select option{background:var(--bg2)}
+.filters-right{margin-left:auto;display:flex;gap:0.6rem}
+.export-btn{background:var(--bg3);border:1px solid var(--border2);color:var(--gray);padding:0.6rem 1.2rem;border-radius:6px;font-size:0.8rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.export-btn:hover{border-color:var(--green);color:var(--green)}
+
+/* TABLE */
+.table-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.table-header{padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.table-title{font-size:0.8rem;color:var(--gray);letter-spacing:1.5px;text-transform:uppercase}
+.table-count{font-family:'Space Mono',monospace;font-size:0.75rem;color:var(--orange)}
+table{width:100%;border-collapse:collapse}
+thead th{padding:0.8rem 1.2rem;text-align:left;font-size:0.68rem;color:var(--gray);letter-spacing:1.5px;text-transform:uppercase;border-bottom:1px solid var(--border);font-weight:400;white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:background .15s;cursor:pointer}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,0.02)}
+tbody td{padding:0.9rem 1.2rem;font-size:0.85rem;color:var(--white);vertical-align:middle}
+.td-mono{font-family:'Space Mono',monospace;font-size:0.78rem;color:var(--gray)}
+.td-amount{font-family:'Space Mono',monospace;font-size:0.9rem;color:var(--green);font-weight:700}
+.td-name{font-weight:500}
+.td-items{font-size:0.78rem;color:var(--gray);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* STATUS BADGES */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:4px;font-size:0.7rem;font-weight:600;letter-spacing:0.5px;text-transform:uppercase}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%}
+.badge.approved{background:var(--green-dim);color:var(--green)}.badge.approved::before{background:var(--green)}
+.badge.pending{background:var(--yellow-dim);color:var(--yellow)}.badge.pending::before{background:var(--yellow)}
+.badge.declined{background:var(--red-dim);color:var(--red)}.badge.declined::before{background:var(--red)}
+.badge.credit{background:var(--blue-dim);color:var(--blue)}
+.badge.debit{background:var(--orange-dim);color:var(--orange)}
+.badge.pix{background:var(--green-dim);color:var(--green)}
+
+/* EMPTY / LOADING */
+.table-empty{padding:4rem;text-align:center;color:var(--gray)}
+.table-empty .empty-icon{font-size:2.5rem;margin-bottom:1rem;opacity:0.4}
+.table-empty p{font-size:0.88rem}
+.table-loading{padding:3rem;text-align:center}
+.spinner-ring{width:32px;height:32px;border:2px solid var(--border2);border-top-color:var(--orange);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ORDER DETAIL MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;width:100%;max-width:520px;max-height:85vh;overflow-y:auto}
+.modal-head{padding:1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;position:sticky;top:0;background:var(--bg2);z-index:1}
+.modal-title{font-family:'Space Mono',monospace;font-size:0.95rem;font-weight:700}
+.modal-close{background:none;border:none;color:var(--gray);font-size:1.2rem;cursor:pointer;transition:color .2s}
+.modal-close:hover{color:var(--white)}
+.modal-body{padding:1.5rem}
+.detail-row{display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0;border-bottom:1px solid var(--border)}
+.detail-row:last-child{border-bottom:none}
+.detail-label{font-size:0.72rem;color:var(--gray);letter-spacing:1px;text-transform:uppercase}
+.detail-value{font-size:0.88rem;color:var(--white);font-weight:500;text-align:right}
+.detail-value.mono{font-family:'Space Mono',monospace;font-size:0.8rem}
+.modal-section-title{font-size:0.68rem;color:var(--orange);letter-spacing:2px;text-transform:uppercase;margin:1.2rem 0 0.6rem;padding-bottom:0.4rem;border-bottom:1px solid var(--border)}
+
+/* SUPABASE STATUS BANNER */
+.db-banner{display:flex;align-items:center;gap:10px;padding:0.7rem 1.2rem;border-radius:6px;margin-bottom:1.5rem;font-size:0.82rem}
+.db-banner.connected{background:var(--green-dim);border:1px solid rgba(29,158,117,0.3);color:var(--green)}
+.db-banner.disconnected{background:var(--yellow-dim);border:1px solid rgba(232,181,10,0.3);color:var(--yellow)}
+.db-banner.error{background:var(--red-dim);border:1px solid rgba(226,75,74,0.3);color:var(--red)}
+
+/* PAGINATION */
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;border-top:1px solid var(--border)}
+.page-info{font-size:0.78rem;color:var(--gray)}
+.page-btns{display:flex;gap:0.4rem}
+.page-btn{background:var(--bg3);border:1px solid var(--border);color:var(--gray);width:32px;height:32px;border-radius:4px;font-size:0.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:'DM Sans',sans-serif}
+.page-btn:hover,.page-btn.active{background:var(--orange);border-color:var(--orange);color:var(--white)}
+.page-btn:disabled{opacity:0.3;cursor:not-allowed}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .sidebar{width:60px;overflow:hidden}
+  .sidebar-logo .logo-sub,.nav-item span,.sidebar-footer .sidebar-user,.logout-btn{display:none}
+  .sidebar-logo .logo{font-size:0.9rem}
+  .nav-item{justify-content:center;padding:0.8rem}
+  .main{margin-left:60px;padding:1.5rem 1rem}
+  .kpi-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:600px){
+  .kpi-grid{grid-template-columns:1fr}
+  .filters-bar{flex-direction:column;align-items:stretch}
+  .filter-input.search{min-width:unset}
+  .filters-right{margin-left:0}
+  thead th:nth-child(3),thead th:nth-child(5),tbody td:nth-child(3),tbody td:nth-child(5){display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     LOGIN
+══════════════════════════════════════════ -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-bg"><div class="login-grid"></div></div>
+  <div class="login-box">
+    <div class="login-logo">EGS<span>.</span></div>
+    <div class="login-subtitle">Painel Administrativo</div>
+    <div class="login-form">
+      <div class="login-field">
+        <label>Usuário</label>
+        <input type="text" id="loginUser" placeholder="admin" autocomplete="username">
+      </div>
+      <div class="login-field">
+        <label>Senha</label>
+        <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div class="login-error" id="loginError">Usuário ou senha incorretos.</div>
+      <button class="login-btn" onclick="doLogin()">Entrar no painel →</button>
+    </div>
+    <div class="login-version">EGS ADMIN v1.0 · SANDBOX</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     DASHBOARD
+══════════════════════════════════════════ -->
+<div class="dashboard" id="dashboard">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo">EGS<span>.</span></div>
+      <div class="logo-sub">Admin Panel</div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item active" onclick="showPage('orders')">
+        <span class="nav-icon">📦</span><span>Pedidos</span>
+      </a>
+      <a class="nav-item" onclick="showPage('stats')">
+        <span class="nav-icon">📊</span><span>Estatísticas</span>
+      </a>
+      <a class="nav-item" onclick="showPage('settings')">
+        <span class="nav-icon">⚙️</span><span>Configurações</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user" id="sidebarUser"></div>
+      <button class="logout-btn" onclick="doLogout()">Sair</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="page-title">Pedidos <span>//</span> EGS Materiais</div>
+      <div class="topbar-right">
+        <div class="live-badge"><div class="live-dot"></div>Ao vivo</div>
+        <button class="refresh-btn" onclick="loadOrders()">↻ Atualizar</button>
+      </div>
+    </div>
+
+    <!-- SUPABASE STATUS -->
+    <div class="db-banner" id="dbBanner">
+      <span>⏳</span> Conectando ao banco de dados...
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi-card orange">
+        <div class="kpi-label">Total de Pedidos</div>
+        <div class="kpi-value" id="kpiTotal">—</div>
+        <div class="kpi-sub">desde o início</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Receita Total</div>
+        <div class="kpi-value" id="kpiRevenue">—</div>
+        <div class="kpi-sub">pagamentos aprovados</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-label">Ticket Médio</div>
+        <div class="kpi-value" id="kpiTicket">—</div>
+        <div class="kpi-sub">por pedido aprovado</div>
+      </div>
+      <div class="kpi-card yellow">
+        <div class="kpi-label">Hoje</div>
+        <div class="kpi-value" id="kpiToday">—</div>
+        <div class="kpi-sub">pedidos nas últimas 24h</div>
+      </div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filters-bar">
+      <input type="text" class="filter-input search" id="searchFilter" placeholder="🔍 Buscar por nome, e-mail ou TID..." oninput="applyFilters()">
+      <select class="filter-select" id="statusFilter" onchange="applyFilters()">
+        <option value="">Todos os status</option>
+        <option value="approved">Aprovado</option>
+        <option value="pending">Pendente</option>
+        <option value="declined">Recusado</option>
+      </select>
+      <select class="filter-select" id="kindFilter" onchange="applyFilters()">
+        <option value="">Todas as formas</option>
+        <option value="credit">Crédito</option>
+        <option value="debit">Débito</option>
+        <option value="pix">Pix</option>
+      </select>
+      <div class="filters-right">
+        <button class="export-btn" onclick="exportCSV()">⬇ Exportar CSV</button>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-wrap">
+      <div class="table-header">
+        <span class="table-title">Histórico de Pedidos</span>
+        <span class="table-count" id="tableCount">0 pedidos</span>
+      </div>
+      <div id="tableBody">
+        <div class="table-loading"><div class="spinner-ring"></div><p style="font-size:0.82rem;color:var(--gray)">Carregando pedidos...</p></div>
+      </div>
+      <div class="pagination" id="pagination" style="display:none">
+        <span class="page-info" id="pageInfo"></span>
+        <div class="page-btns" id="pageBtns"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ORDER DETAIL MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="modalTitle">Detalhes do Pedido</div>
+        <div style="font-size:0.72rem;color:var(--gray);margin-top:4px" id="modalDate"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+/* ================================================================
+   ⚙️  CONFIGURAÇÕES — EDITE AQUI
+   ================================================================ */
+
+// ── CREDENCIAIS SUPABASE ──────────────────────────────────────
+// 1. Acesse app.supabase.com → seu projeto
+// 2. Settings → API
+// 3. Copie os valores abaixo:
+const SUPABASE_URL = "COLE_A_URL_DO_SUPABASE_AQUI";
+// Exemplo: "https://xyzxyzxyz.supabase.co"
+
+const SUPABASE_KEY = "COLE_A_CHAVE_ANON_DO_SUPABASE_AQUI";
+// Exemplo: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+// ── CREDENCIAIS DE ACESSO AO PAINEL ──────────────────────────
+// Troque para seu usuário e senha desejados:
+const ADMIN_USER = "admin";
+const ADMIN_PASS = "egs@2025";
+
+// ── NOME DA TABELA NO SUPABASE ────────────────────────────────
+// Após criar a tabela no Supabase, confirme o nome aqui:
+const TABLE_NAME = "pedidos";
+
+/* ================================================================
+   ESTRUTURA DA TABELA NO SUPABASE
+   ================================================================
+   Crie uma tabela chamada "pedidos" com as colunas:
+
+   id              → int8, primary key, auto-increment
+   created_at      → timestamptz, default: now()
+   tid             → text (ID da transação e.Rede)
+   reference       → text (referência do pedido)
+   status          → text (approved / pending / declined)
+   kind            → text (credit / debit / pix)
+   amount          → int8 (valor em centavos)
+   installments    → int4
+   customer_name   → text
+   customer_email  → text
+   customer_cpf    → text
+   items           → text (itens do carrinho)
+   authorization   → text (código de autorização)
+   return_code     → text
+
+   Como criar:
+   1. Acesse app.supabase.com → Table Editor → New Table
+   2. Nome: pedidos
+   3. Adicione as colunas acima
+   4. Habilite Row Level Security → Add Policy → Allow all (para testes)
+   ================================================================ */
+
+/* ── AUTH ── */
+const SESSION_KEY = 'egs_admin_session';
+
+function doLogin(){
+  const u=document.getElementById('loginUser').value.trim();
+  const p=document.getElementById('loginPass').value;
+  if(u===ADMIN_USER&&p===ADMIN_PASS){
+    sessionStorage.setItem(SESSION_KEY,JSON.stringify({user:u,time:Date.now()}));
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('dashboard').classList.add('visible');
+    document.getElementById('sidebarUser').textContent=u;
+    initDashboard();
+  }else{
+    document.getElementById('loginError').classList.add('show');
+    document.getElementById('loginPass').value='';
+  }
+}
+
+function doLogout(){
+  sessionStorage.removeItem(SESSION_KEY);
+  location.reload();
+}
+
+function checkSession(){
+  const s=sessionStorage.getItem(SESSION_KEY);
+  if(s){
+    const {user}=JSON.parse(s);
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('dashboard').classList.add('visible');
+    document.getElementById('sidebarUser').textContent=user;
+    initDashboard();
+  }
+}
+
+/* ── SUPABASE ── */
+const configured = SUPABASE_URL&&!SUPABASE_URL.includes('COLE_A_URL');
+
+async function supaFetch(path,opts={}){
+  const res=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{
+    headers:{
+      'apikey':SUPABASE_KEY,
+      'Authorization':`Bearer ${SUPABASE_KEY}`,
+      'Content-Type':'application/json',
+      'Prefer':'return=representation',
+      ...opts.headers
+    },
+    ...opts
+  });
+  if(!res.ok){
+    const err=await res.json().catch(()=>({}));
+    throw new Error(err.message||`HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+async function getOrders(){
+  return supaFetch(`${TABLE_NAME}?select=*&order=created_at.desc`);
+}
+
+/* ── DASHBOARD ── */
+let allOrders=[];
+let filteredOrders=[];
+let currentPage=1;
+const PAGE_SIZE=15;
+
+async function initDashboard(){
+  await loadOrders();
+  // auto-refresh a cada 30s
+  setInterval(loadOrders,30000);
+}
+
+async function loadOrders(){
+  if(!configured){
+    setBanner('disconnected','⚠️ Supabase não configurado — edite SUPABASE_URL e SUPABASE_KEY no topo do arquivo');
+    renderDemoData();
+    return;
+  }
+  try{
+    const orders=await getOrders();
+    allOrders=orders||[];
+    setBanner('connected',`✓ Conectado ao Supabase · ${allOrders.length} pedidos carregados`);
+    applyFilters();
+    updateKPIs();
+  }catch(err){
+    setBanner('error',`✗ Erro ao conectar: ${err.message}`);
+    renderDemoData();
+  }
+}
+
+function setBanner(type,msg){
+  const b=document.getElementById('dbBanner');
+  b.className=`db-banner ${type}`;
+  const icons={connected:'✓',disconnected:'⚠️',error:'✗'};
+  b.innerHTML=`<span>${icons[type]||'•'}</span> ${msg}`;
+}
+
+function updateKPIs(){
+  const approved=allOrders.filter(o=>o.status==='approved');
+  const revenue=approved.reduce((s,o)=>s+(o.amount||0),0)/100;
+  const ticket=approved.length?revenue/approved.length:0;
+  const today=allOrders.filter(o=>{
+    const d=new Date(o.created_at);
+    const now=new Date();
+    return d.toDateString()===now.toDateString();
+  }).length;
+  document.getElementById('kpiTotal').textContent=allOrders.length;
+  document.getElementById('kpiRevenue').textContent='R$'+fmtMoney(revenue);
+  document.getElementById('kpiTicket').textContent='R$'+fmtMoney(ticket);
+  document.getElementById('kpiToday').textContent=today;
+}
+
+function fmtMoney(v){
+  return parseFloat(v).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+}
+
+function fmtDate(d){
+  if(!d)return'—';
+  const dt=new Date(d);
+  return dt.toLocaleDateString('pt-BR')+' '+dt.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+}
+
+function applyFilters(){
+  const q=(document.getElementById('searchFilter').value||'').toLowerCase();
+  const st=document.getElementById('statusFilter').value;
+  const kd=document.getElementById('kindFilter').value;
+  filteredOrders=allOrders.filter(o=>{
+    const matchQ=!q||(o.customer_name||'').toLowerCase().includes(q)||(o.customer_email||'').toLowerCase().includes(q)||(o.tid||'').toLowerCase().includes(q)||(o.reference||'').toLowerCase().includes(q);
+    const matchS=!st||o.status===st;
+    const matchK=!kd||o.kind===kd;
+    return matchQ&&matchS&&matchK;
+  });
+  currentPage=1;
+  renderTable();
+}
+
+function renderTable(){
+  const total=filteredOrders.length;
+  document.getElementById('tableCount').textContent=`${total} pedido${total!==1?'s':''}`;
+
+  if(!total){
+    document.getElementById('tableBody').innerHTML=`
+      <div class="table-empty">
+        <div class="empty-icon">📭</div>
+        <p>Nenhum pedido encontrado</p>
+      </div>`;
+    document.getElementById('pagination').style.display='none';
+    return;
+  }
+
+  const start=(currentPage-1)*PAGE_SIZE;
+  const page=filteredOrders.slice(start,start+PAGE_SIZE);
+  const totalPages=Math.ceil(total/PAGE_SIZE);
+
+  document.getElementById('tableBody').innerHTML=`
+    <table>
+      <thead>
+        <tr>
+          <th>Referência</th>
+          <th>Cliente</th>
+          <th>Itens</th>
+          <th>Valor</th>
+          <th>Forma</th>
+          <th>Status</th>
+          <th>Data</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${page.map(o=>`
+          <tr onclick="openModal(${JSON.stringify(o).replace(/"/g,'&quot;')})">
+            <td class="td-mono">${o.reference||o.tid||'—'}</td>
+            <td class="td-name">${o.customer_name||'—'}</td>
+            <td class="td-items">${o.items||'—'}</td>
+            <td class="td-amount">R$ ${fmtMoney((o.amount||0)/100)}</td>
+            <td><span class="badge ${o.kind||''}">${kindLabel(o.kind)}</span></td>
+            <td><span class="badge ${o.status||''}">${statusLabel(o.status)}</span></td>
+            <td class="td-mono" style="font-size:0.72rem">${fmtDate(o.created_at)}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+
+  // pagination
+  const pag=document.getElementById('pagination');
+  pag.style.display='flex';
+  document.getElementById('pageInfo').textContent=`Página ${currentPage} de ${totalPages} · ${total} resultados`;
+  const btns=document.getElementById('pageBtns');
+  btns.innerHTML=`
+    <button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>
+    ${Array.from({length:Math.min(totalPages,5)},(_,i)=>{
+      const p=Math.max(1,Math.min(currentPage-2,totalPages-4))+i;
+      return p<=totalPages?`<button class="page-btn ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`:''
+    }).join('')}
+    <button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>›</button>`;
+}
+
+function goPage(p){
+  const total=Math.ceil(filteredOrders.length/PAGE_SIZE);
+  if(p<1||p>total)return;
+  currentPage=p;
+  renderTable();
+  document.querySelector('.table-wrap').scrollIntoView({behavior:'smooth'});
+}
+
+function kindLabel(k){return{credit:'Crédito',debit:'Débito',pix:'Pix'}[k]||k||'—'}
+function statusLabel(s){return{approved:'Aprovado',pending:'Pendente',declined:'Recusado'}[s]||s||'—'}
+
+/* ── MODAL ── */
+function openModal(o){
+  document.getElementById('modalTitle').textContent=`Pedido ${o.reference||o.tid||'—'}`;
+  document.getElementById('modalDate').textContent=fmtDate(o.created_at);
+  document.getElementById('modalBody').innerHTML=`
+    <div class="modal-section-title">Cliente</div>
+    <div class="detail-row"><span class="detail-label">Nome</span><span class="detail-value">${o.customer_name||'—'}</span></div>
+    <div class="detail-row"><span class="detail-label">E-mail</span><span class="detail-value">${o.customer_email||'—'}</span></div>
+    <div class="detail-row"><span class="detail-label">CPF</span><span class="detail-value detail-mono">${fmtCpf(o.customer_cpf||'')}</span></div>
+
+    <div class="modal-section-title">Pagamento</div>
+    <div class="detail-row"><span class="detail-label">Valor</span><span class="detail-value" style="color:var(--green);font-family:'Space Mono',monospace">R$ ${fmtMoney((o.amount||0)/100)}</span></div>
+    <div class="detail-row"><span class="detail-label">Forma</span><span class="detail-value"><span class="badge ${o.kind}">${kindLabel(o.kind)}</span></span></div>
+    <div class="detail-row"><span class="detail-label">Parcelas</span><span class="detail-value">${o.installments||1}x</span></div>
+    <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value"><span class="badge ${o.status}">${statusLabel(o.status)}</span></span></div>
+
+    <div class="modal-section-title">Transação</div>
+    <div class="detail-row"><span class="detail-label">TID</span><span class="detail-value detail-mono">${o.tid||'—'}</span></div>
+    <div class="detail-row"><span class="detail-label">Autorização</span><span class="detail-value detail-mono">${o.authorization||'—'}</span></div>
+    <div class="detail-row"><span class="detail-label">Código Retorno</span><span class="detail-value detail-mono">${o.return_code||'—'}</span></div>
+    <div class="detail-row"><span class="detail-label">Referência</span><span class="detail-value detail-mono">${o.reference||'—'}</span></div>
+
+    <div class="modal-section-title">Itens do Pedido</div>
+    <div style="padding:0.8rem 0;font-size:0.85rem;color:var(--gray);line-height:1.8">${o.items||'—'}</div>
+  `;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal(){document.getElementById('modalOverlay').classList.remove('open')}
+function closeModalOutside(e){if(e.target===document.getElementById('modalOverlay'))closeModal()}
+
+function fmtCpf(c){
+  c=c.replace(/\D/g,'');
+  return c.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4')||'—';
+}
+
+/* ── EXPORT CSV ── */
+function exportCSV(){
+  if(!filteredOrders.length){alert('Nenhum pedido para exportar.');return}
+  const headers=['Referência','TID','Cliente','E-mail','CPF','Valor','Forma','Parcelas','Status','Autorização','Data'];
+  const rows=filteredOrders.map(o=>[
+    o.reference||'',o.tid||'',o.customer_name||'',o.customer_email||'',o.customer_cpf||'',
+    ((o.amount||0)/100).toFixed(2),o.kind||'',o.installments||1,o.status||'',
+    o.authorization||'',fmtDate(o.created_at)
+  ]);
+  const csv=[headers,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`egs-pedidos-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+/* ── DEMO DATA (quando Supabase não configurado) ── */
+function renderDemoData(){
+  allOrders=[
+    {id:1,created_at:new Date().toISOString(),tid:'20240501123456789',reference:'EGS-001',status:'approved',kind:'credit',amount:42900,installments:3,customer_name:'João Carlos Silva',customer_email:'joao@email.com',customer_cpf:'12345678901',items:'1x Cimento CP II 50kg · 2x Tijolo Cerâmico',authorization:'AUTH001',return_code:'00'},
+    {id:2,created_at:new Date(Date.now()-3600000).toISOString(),tid:'20240501123456790',reference:'EGS-002',status:'approved',kind:'pix',amount:28900,installments:1,customer_name:'Ana Santos',customer_email:'ana@email.com',customer_cpf:'98765432100',items:'1x Furadeira de Impacto 650W',authorization:'PIX001',return_code:'00'},
+    {id:3,created_at:new Date(Date.now()-7200000).toISOString(),tid:'20240501123456791',reference:'EGS-003',status:'declined',kind:'debit',amount:18990,installments:1,customer_name:'Pedro Oliveira',customer_email:'pedro@email.com',customer_cpf:'11122233344',items:'2x Tinta Acrílica 18L',authorization:'',return_code:'57'},
+    {id:4,created_at:new Date(Date.now()-86400000).toISOString(),tid:'20240501123456792',reference:'EGS-004',status:'approved',kind:'credit',amount:64500,installments:6,customer_name:'Maria Souza',customer_email:'maria@email.com',customer_cpf:'55566677788',items:'3x Tubo PVC 100mm · 1x Serra Circular',authorization:'AUTH004',return_code:'00'},
+    {id:5,created_at:new Date(Date.now()-90000000).toISOString(),tid:'20240501123456793',reference:'EGS-005',status:'pending',kind:'pix',amount:15900,installments:1,customer_name:'Carlos Lima',customer_email:'carlos@email.com',customer_cpf:'99988877766',items:'1x Cabo Flex 2,5mm 100m',authorization:'',return_code:''},
+  ];
+  applyFilters();
+  updateKPIs();
+}
+
+/* ── NAV ── */
+function showPage(page){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  if(page==='orders')loadOrders();
+  else if(page==='settings')showSettingsInfo();
+}
+
+function showSettingsInfo(){
+  document.querySelector('.main').innerHTML=`
+    <div class="topbar">
+      <div class="page-title">Configurações <span>//</span> EGS Admin</div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:2rem;max-width:600px">
+      <div style="font-size:0.68rem;color:var(--orange);letter-spacing:2px;text-transform:uppercase;margin-bottom:1rem">Supabase</div>
+      <div style="font-size:0.85rem;color:var(--gray);line-height:1.8;margin-bottom:1.5rem">
+        Para conectar o painel ao banco de dados:<br><br>
+        1. Acesse <strong style="color:var(--white)">app.supabase.com</strong><br>
+        2. Vá em <strong style="color:var(--white)">Settings → API</strong><br>
+        3. Copie <strong style="color:var(--white)">Project URL</strong> → cole em <code style="color:var(--orange)">SUPABASE_URL</code><br>
+        4. Copie <strong style="color:var(--white)">anon public key</strong> → cole em <code style="color:var(--orange)">SUPABASE_KEY</code><br>
+        5. Crie a tabela <code style="color:var(--orange)">pedidos</code> conforme a documentação no código
+      </div>
+      <div style="font-size:0.68rem;color:var(--orange);letter-spacing:2px;text-transform:uppercase;margin-bottom:1rem">Acesso ao painel</div>
+      <div style="font-size:0.85rem;color:var(--gray);line-height:1.8">
+        Usuário: <code style="color:var(--white)">${ADMIN_USER}</code><br>
+        Para alterar, edite <code style="color:var(--orange)">ADMIN_USER</code> e <code style="color:var(--orange)">ADMIN_PASS</code> no arquivo
+      </div>
+    </div>`;
+}
+
+/* ── INIT ── */
+checkSession();
+</script>
+</body>
+</html>
