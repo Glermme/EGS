@@ -290,6 +290,7 @@ footer{background:var(--charcoal);color:#aaa;padding:3rem 5% 1.5rem}
   .section-header{flex-direction:column;align-items:flex-start;gap:0.5rem}
 }
 </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
@@ -839,6 +840,45 @@ loadSheet();
         </div>
       </div>
 
+      <!-- ENDEREÇO DE COBRANÇA -->
+      <div class="checkout-section">
+        <div class="checkout-section-title">📍 Endereço de cobrança</div>
+        <div class="checkout-grid" style="margin-bottom:0.8rem">
+          <div class="checkout-field">
+            <label>CEP *</label>
+            <input type="text" id="ckZip" placeholder="00000-000" maxlength="9" oninput="maskZip(this)" onblur="fetchCep(this.value)">
+          </div>
+          <div class="checkout-field">
+            <label>Número *</label>
+            <input type="text" id="ckAddrNum" placeholder="123">
+          </div>
+        </div>
+        <div class="checkout-grid" style="margin-bottom:0.8rem">
+          <div class="checkout-field">
+            <label>Rua *</label>
+            <input type="text" id="ckStreet" placeholder="Av. Brasil">
+          </div>
+          <div class="checkout-field">
+            <label>Bairro *</label>
+            <input type="text" id="ckDistrict" placeholder="Centro">
+          </div>
+        </div>
+        <div class="checkout-grid" style="margin-bottom:0.8rem">
+          <div class="checkout-field">
+            <label>Cidade *</label>
+            <input type="text" id="ckCity" placeholder="São Paulo">
+          </div>
+          <div class="checkout-field">
+            <label>Estado *</label>
+            <input type="text" id="ckState" placeholder="SP" maxlength="2" style="text-transform:uppercase">
+          </div>
+        </div>
+        <div class="checkout-field">
+          <label>Complemento</label>
+          <input type="text" id="ckComplement" placeholder="Apto 10, Sala 2 (opcional)">
+        </div>
+      </div>
+
       <!-- FORMA DE PAGAMENTO -->
       <div class="checkout-section">
         <div class="checkout-section-title">💳 Forma de pagamento</div>
@@ -984,6 +1024,25 @@ function maskCard(el){
   v=v.replace(/(\d{4})/g,'$1 ').trim();
   el.value=v;
 }
+function maskZip(el){
+  let v=el.value.replace(/\D/g,'').slice(0,8);
+  if(v.length>5)v=v.slice(0,5)+'-'+v.slice(5);
+  el.value=v;
+}
+async function fetchCep(val){
+  const cep=val.replace(/\D/g,'');
+  if(cep.length!==8)return;
+  try{
+    const r=await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const d=await r.json();
+    if(d.erro)return;
+    document.getElementById('ckStreet').value=d.logradouro||'';
+    document.getElementById('ckDistrict').value=d.bairro||'';
+    document.getElementById('ckCity').value=d.localidade||'';
+    document.getElementById('ckState').value=d.uf||'';
+    document.getElementById('ckAddrNum').focus();
+  }catch{}
+}
 function maskExpiry(el){
   let v=el.value.replace(/\D/g,'');
   if(v.length>6)v=v.slice(0,6);
@@ -1002,6 +1061,13 @@ function validateCheckout(){
   if(cpf.length!==11)return'CPF inválido';
   if(!email.includes('@'))return'E-mail inválido';
   if(phone.length<10)return'Telefone inválido';
+  const zip=document.getElementById('ckZip').value.replace(/\D/g,'');
+  if(zip.length!==8)return'CEP inválido';
+  if(!document.getElementById('ckStreet').value.trim())return'Informe a rua';
+  if(!document.getElementById('ckAddrNum').value.trim())return'Informe o número';
+  if(!document.getElementById('ckDistrict').value.trim())return'Informe o bairro';
+  if(!document.getElementById('ckCity').value.trim())return'Informe a cidade';
+  if(!document.getElementById('ckState').value.trim())return'Informe o estado';
 
   if(currentPayTab!=='pix'){
     const isCredit=currentPayTab==='credit';
@@ -1038,12 +1104,20 @@ async function submitPayment(){
 
   const isCredit = currentPayTab==='credit';
   const payload  = {
-    amount:      amountCents,
+    amount:        amountCents,
     reference,
-    kind:        currentPayTab,
+    kind:          currentPayTab,
     customerName:  document.getElementById('ckName').value.trim(),
     customerCpf:   document.getElementById('ckCpf').value.replace(/\D/g,''),
     customerEmail: document.getElementById('ckEmail').value.trim(),
+    customerPhone: document.getElementById('ckPhone').value.replace(/\D/g,''),
+    addrStreet:    document.getElementById('ckStreet').value.trim(),
+    addrNumber:    document.getElementById('ckAddrNum').value.trim(),
+    addrComplement:document.getElementById('ckComplement').value.trim(),
+    addrDistrict:  document.getElementById('ckDistrict').value.trim(),
+    addrCity:      document.getElementById('ckCity').value.trim(),
+    addrState:     document.getElementById('ckState').value.trim().toUpperCase(),
+    addrZip:       document.getElementById('ckZip').value.replace(/\D/g,''),
     installments:  currentPayTab==='credit'
                     ? parseInt(document.getElementById('ckInstallments').value)
                     : 1,
@@ -1059,6 +1133,7 @@ async function submitPayment(){
     cardHolder:  currentPayTab!=='pix'
                     ? document.getElementById(isCredit?'ckHolder':'ckHolderD').value
                     : '',
+    items:       cart.map(i=>`${i.qty}x ${i.nome||'Produto'}`).join(', '),
   };
 
   try{
@@ -1077,18 +1152,23 @@ async function submitPayment(){
     if(currentPayTab==='pix'){
       btn.disabled=false;
       btn.innerHTML='⚡ Gerar Pix';
-      if(data.qrCodeImage){
-        document.getElementById('pixQrContainer').innerHTML=
-          `<img src="data:image/png;base64,${data.qrCodeImage}" alt="QR Code Pix">`;
+      const qrCode=(data.additional_data&&data.additional_data.qr_code)||data.qrCode||'';
+      const qrImage=(data.additional_data&&data.additional_data.qr_code_image)||data.qrCodeImage||'';
+      const qrDiv=document.getElementById('pixQrContainer');
+      if(qrImage){
+        qrDiv.innerHTML=`<img src="data:image/png;base64,${qrImage}" alt="QR Code Pix">`;
+      } else if(qrCode){
+        qrDiv.innerHTML='';
+        new QRCode(qrDiv,{text:qrCode,width:180,height:180,correctLevel:QRCode.CorrectLevel.M});
       }
-      if(data.qrCode){
+      if(qrCode){
         const codeEl=document.getElementById('pixCode');
-        codeEl.textContent=data.qrCode;
+        codeEl.textContent=qrCode;
         codeEl.style.display='block';
-        window._pixCode=data.qrCode;
+        window._pixCode=qrCode;
       }
       showToast('QR Code Pix gerado! Escaneie para pagar.');
-      pollPixStatus(data.tid);
+      pollPixStatus(data.payment_id||data.tid);
       return;
     }
 
@@ -1117,18 +1197,18 @@ function copyPix(){
 
 /* Polling para confirmar Pix */
 async function pollPixStatus(tid, attempts=0){
-  if(attempts>20)return; // para após ~2min
+  if(!tid||attempts>40)return;
   setTimeout(async()=>{
     try{
-      const res  = await fetch(`/api/status?tid=${tid}`);
-      const data = await res.json();
-      if(data.status==='approved'){
-        showSuccess(data);
+      const res=await fetch(`/api/status-pix?tid=${tid}`);
+      const data=await res.json();
+      if(data.status==='approved'||data.status==='APPROVED'){
+        showSuccess({tid,...data});
       } else {
-        pollPixStatus(tid, attempts+1);
+        pollPixStatus(tid,attempts+1);
       }
     }catch{
-      pollPixStatus(tid, attempts+1);
+      pollPixStatus(tid,attempts+1);
     }
   },6000);
 }
