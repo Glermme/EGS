@@ -1,219 +1,210 @@
 // ================================================================
-// api/checkout.js — Processa pagamentos via e.Rede
-// ================================================================
-// CREDENCIAIS — quando for para produção, troque os valores
-// das variáveis de ambiente no Vercel:
-//   Settings → Environment Variables
-//   REDE_PV       → número do estabelecimento
-//   REDE_TOKEN    → token de autenticação
-//   REDE_SANDBOX  → "true" em teste, "false" em produção
-//   SUPABASE_URL  → https://XXXX.supabase.co         ← NOVO
-//   SUPABASE_KEY  → sua service_role key do Supabase  ← NOVO
+// api/checkout-getnet.js
 // ================================================================
 
-const REDE_PV      = process.env.REDE_PV    || "48087130";
-const REDE_TOKEN   = process.env.REDE_TOKEN || "f2e49b858d864e30aacbdefa6d20eb93";
-const REDE_SANDBOX = process.env.REDE_SANDBOX !== "false"; // true = sandbox
+const GETNET_CLIENT_ID     = process.env.GETNET_CLIENT_ID;
+const GETNET_CLIENT_SECRET = process.env.GETNET_CLIENT_SECRET;
+const GETNET_SELLER_ID     = process.env.GETNET_SELLER_ID;
+const SUPABASE_URL         = process.env.SUPABASE_URL || "";
+const SUPABASE_KEY         = process.env.SUPABASE_KEY || "";
+const GETNET_URL           = "https://api.getnet.com.br";
 
-const REDE_URL = REDE_SANDBOX
-  ? "https://sandbox-erede.useredecloud.com.br"
-  : "https://api.userede.com.br";
-
-// credencial base64 para autenticação Basic
-const REDE_AUTH = Buffer.from(`${REDE_PV}:${REDE_TOKEN}`).toString("base64");
-
-// ── Supabase ─────────────────────────────────────────────────────
-// Use a service_role key aqui (server-side, nunca exposta ao cliente)
-const SUPABASE_URL = process.env.SUPABASE_URL || "";
-const SUPABASE_KEY = process.env.SUPABASE_KEY || ""; // service_role key
-
-/**
- * Salva o pedido na tabela `pedidos` do Supabase.
- * Falha silenciosa: se o Supabase não estiver configurado ou der erro,
- * o pagamento já foi aprovado — o cliente não é prejudicado.
- */
-async function saveOrder(orderData) {
-  if (!SUPABASE_URL || !SUPABASE_KEY) return; // não configurado, pula
-
+/* ── Supabase insert ─────────────────────────── */
+async function insertOrder(row) {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return;
   try {
-    await fetch(`${SUPABASE_URL}/rest/v1/pedidos`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/pedidos`, {
       method: "POST",
       headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
         "Content-Type": "application/json",
-        "apikey": SUPABASE_KEY,
-        "Authorization": `Bearer ${SUPABASE_KEY}`,
-        "Prefer": "return=minimal",
+        Prefer: "return=minimal",
       },
-      body: JSON.stringify(orderData),
+      body: JSON.stringify(row),
     });
+    if (!res.ok) console.error("Supabase insert erro:", await res.text());
+    else console.log("Supabase insert OK:", row.tid);
   } catch (err) {
-    // log sem quebrar o fluxo do checkout
-    console.error("[Supabase] Erro ao salvar pedido:", err.message);
+    console.error("Supabase insert exception:", err.message);
   }
 }
 
-// ================================================================
+/* ── Token ───────────────────────────────────── */
+async function getToken() {
+  const credentials = Buffer.from(`${GETNET_CLIENT_ID}:${GETNET_CLIENT_SECRET}`).toString("base64");
+  const res = await fetch(`${GETNET_URL}/auth/oauth/v2/token`, {
+    method: "POST",
+    headers: { Authorization: `Basic ${credentials}`, "Content-Type": "application/x-www-form-urlencoded" },
+    body: "grant_type=client_credentials&scope=oob",
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error("Token falhou: " + JSON.stringify(data));
+  return data.access_token;
+}
 
-export default async function handler(req, res) {
-  // Só aceita POST
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Método não permitido" });
-  }
+/* ── Tokeniza cartão ─────────────────────────── */
+async function tokenizeCard(token, cardNumber, customerId) {
+  const clean = String(cardNumber).replace(/\D/g, "");
+  if (!clean || clean.length < 13) throw new Error("Número de cartão inválido");
+  const res = await fetch(`${GETNET_URL}/v1/tokens/card`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "x-seller-id": GETNET_SELLER_ID, "Content-Type": "application/json" },
+    body: JSON.stringify({ card_number: clean, customer_id: customerId }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error("Tokenização falhou: " + JSON.stringify(data));
+  return data.number_token;
+}
 
+/* ── Fetch seguro ────────────────────────────── */
+async function gFetch(url, opts) {
+  const res = await fetch(url, opts);
+  const txt = await res.text();
+  let data;
+  try { data = JSON.parse(txt); } catch { throw new Error("Resposta não-JSON: " + txt.slice(0, 200)); }
+  console.log("GETNET RESPONSE:", JSON.stringify(data));
+  return { res, data };
+}
+
+/* ── Detecta bandeira ────────────────────────── */
+function detectBrand(num) {
+  const n = String(num).replace(/\D/g, "");
+  if (/^4/.test(n)) return "Visa";
+  if (/^5[1-5]/.test(n)) return "Mastercard";
+  if (/^2(2[2-9][1-9]|[3-6]\d{2}|7[01]\d|720)\d/.test(n)) return "Mastercard";
+  if (/^3[47]/.test(n)) return "Amex";
+  if (/^(6362|438935|504175|451416|636297|5067|4576|4011)/.test(n)) return "Elo";
+  if (/^606282/.test(n)) return "Hipercard";
+  return "Mastercard";
+}
+
+/* ── Handler ─────────────────────────────────── */
+module.exports = async function handler(req, res) {
   try {
+    console.log("=== CHECKOUT START ===");
+    console.log("BODY:", JSON.stringify(req.body));
+
     const {
-      // dados do pedido
-      amount,       // valor em centavos (ex: R$42,90 = 4290)
-      installments, // parcelas (1 para à vista)
-      // dados do cartão
-      cardNumber,
-      cardExpiry,   // "MM/YYYY"
-      cardCvv,
-      cardHolder,
-      // dados do cliente
-      customerName,
-      customerCpf,
-      customerEmail,
-      customerPhone,
-      // endereço / cidade
-      city,
-      // itens do carrinho (array de { name, qty, price })
-      items,
-      // tipo de pagamento
-      kind,         // "credit", "debit" ou "pix"
-      // referência interna
-      reference,    // ex: "PEDIDO-001"
+      kind, amount, installments,
+      cardNumber, cardExpiry, cardCvv, cardHolder,
+      customerName, customerCpf, customerEmail, customerPhone,
+      addrStreet, addrNumber, addrComplement, addrDistrict, addrCity, addrState, addrZip,
+      reference, items,
     } = req.body;
 
-    // ── PIX ──────────────────────────────────────────────────────
-    if (kind === "pix") {
-      const pixBody = {
-        amount: Number(amount),
-        expiresIn: 3600, // expira em 1 hora
-        referenceNumber: reference || `EGS-${Date.now()}`,
-      };
-
-      const pixRes = await fetch(`${REDE_URL}/v1/transactions/pix`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Basic ${REDE_AUTH}`,
-        },
-        body: JSON.stringify(pixBody),
-      });
-
-      const pixData = await pixRes.json();
-
-      if (!pixRes.ok) {
-        return res.status(400).json({
-          error: "Erro ao gerar Pix",
-          details: pixData,
-        });
-      }
-
-      const pixApproved = pixData.returnCode === "00";
-
-      // ── Salva no Supabase (Pix gerado com sucesso) ────────────
-      // Para Pix o status inicial é sempre "aguardando" —
-      // a confirmação de pagamento vem via webhook da e.Rede.
-      if (pixApproved) {
-        await saveOrder({
-          id:             reference || `EGS-${Date.now()}`,
-          customer_name:  customerName  || null,
-          customer_cpf:   customerCpf   || null,
-          customer_email: customerEmail || null,
-          customer_phone: customerPhone || null,
-          city:           city          || null,
-          payment_method: "pix",
-          status:         "aguardando",            // aguarda confirmação do Pix
-          total:          (Number(amount) / 100).toFixed(2),
-          tid:            pixData.tid || null,
-          items:          items || [],
-          created_at:     new Date().toISOString(),
-        });
-      }
-
-      return res.status(200).json({
-        kind: "pix",
-        tid: pixData.tid,
-        qrCode: pixData.pix?.qrCode,
-        qrCodeImage: pixData.pix?.qrCodeImage,
-        expiresAt: pixData.pix?.expiresAt,
-        status: pixApproved ? "pending" : "error",
-      });
+    // Validações
+    if (!["credit","debit","pix"].includes(kind)) return res.status(400).json({ error: "Tipo inválido" });
+    if (!amount || Number(amount) <= 0) return res.status(400).json({ error: "Valor inválido" });
+    if (!customerCpf) return res.status(400).json({ error: "CPF não informado" });
+    if (!customerName) return res.status(400).json({ error: "Nome não informado" });
+    if (kind !== "pix") {
+      if (!cardNumber || String(cardNumber).replace(/\D/g,"").length < 13) return res.status(400).json({ error: "Número de cartão inválido" });
+      if (!cardExpiry || !cardExpiry.includes("/")) return res.status(400).json({ error: "Validade inválida" });
+      if (!cardCvv) return res.status(400).json({ error: "CVV não informado" });
+      if (!cardHolder || cardHolder.trim().length < 3) return res.status(400).json({ error: "Nome do titular inválido" });
     }
 
-    // ── CARTÃO CRÉDITO / DÉBITO ──────────────────────────────────
-    const [expMonth, expYear] = (cardExpiry || "").split("/");
+    const token      = await getToken();
+    const customerId = "customer-" + String(customerCpf).replace(/\D/g, "");
+    const orderId    = reference || `EGS-${Date.now()}`;
+    const amountNum  = Number(amount);
+    const nameParts  = customerName.trim().split(" ");
 
-    const cardBody = {
-      kind: kind === "debit" ? "debit" : "credit",
-      reference: reference || `EGS-${Date.now()}`,
-      amount: Number(amount),
-      installments: Number(installments) || 1,
-      cardholderName: cardHolder,
-      cardNumber: cardNumber.replace(/\s/g, ""),
-      expirationMonth: expMonth,
-      expirationYear: expYear,
-      securityCode: cardCvv,
-      softDescriptor: "EGS MATERIAIS",
-      capture: true, // captura automática
+    const customerObj = {
+      customer_id:     customerId,
+      first_name:      nameParts[0],
+      last_name:       nameParts.slice(1).join(" ") || ".",
+      name:            customerName.trim(),
+      email:           customerEmail,
+      document_type:   "CPF",
+      document_number: String(customerCpf).replace(/\D/g, ""),
+      phone_number:    String(customerPhone).replace(/\D/g, ""),
+      billing_address: {
+        street:      addrStreet     || "",
+        number:      addrNumber     || "",
+        complement:  addrComplement || "",
+        district:    addrDistrict   || "",
+        city:        addrCity       || "",
+        state:       addrState      || "",
+        country:     "Brasil",
+        postal_code: String(addrZip || "").replace(/\D/g, ""),
+      },
     };
 
-    const cardRes = await fetch(`${REDE_URL}/v1/transactions`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Basic ${REDE_AUTH}`,
-      },
-      body: JSON.stringify(cardBody),
-    });
+    const deviceObj = { device_id: "device-" + Date.now(), ip_address: req.headers["x-forwarded-for"] || "127.0.0.1" };
+    const orderObj  = { order_id: orderId, sales_tax: 0, product_type: "service" };
 
-    const cardData = await cardRes.json();
+    const baseRow = {
+      reference: orderId, kind, amount: amountNum,
+      installments: Number(installments) || 1,
+      customer_name: customerName, customer_email: customerEmail,
+      customer_cpf: String(customerCpf).replace(/\D/g, ""),
+      items: items || "", status: "pending",
+    };
 
-    if (!cardRes.ok) {
-      return res.status(400).json({
-        error: "Erro ao processar cartão",
-        details: cardData,
+    /* PIX */
+    if (kind === "pix") {
+      const pixBody = {
+        seller_id: GETNET_SELLER_ID, amount: amountNum, currency: "BRL",
+        order: orderObj, customer: customerObj, device: deviceObj,
+        pix: { expiration_time: 3600, additional_data: [{ name: "Loja", value: "EGS Materiais" }] },
+      };
+      console.log("PIX BODY:", JSON.stringify(pixBody));
+      const { data } = await gFetch(`${GETNET_URL}/v1/payments/qrcode/pix`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "x-seller-id": GETNET_SELLER_ID, "Content-Type": "application/json" },
+        body: JSON.stringify(pixBody),
       });
+      await insertOrder({ ...baseRow, tid: data.payment_id || null });
+      return res.status(200).json(data);
     }
 
-    // returnCode "00" = aprovado
-    const approved = cardData.returnCode === "00";
+    /* Cartão */
+    const [month, yearRaw] = cardExpiry.split("/");
+    const year        = String(yearRaw).trim().slice(-2);
+    const numberToken = await tokenizeCard(token, cardNumber, customerId);
+    const cardHeaders = { Authorization: `Bearer ${token}`, "x-seller-id": GETNET_SELLER_ID, "Content-Type": "application/json" };
+    const cardObj = {
+      number_token: numberToken, cardholder_name: cardHolder.trim(),
+      security_code: String(cardCvv).replace(/\D/g, ""), brand: detectBrand(cardNumber),
+      expiration_month: month.trim(), expiration_year: year,
+    };
 
-    // ── Salva no Supabase (apenas se aprovado) ────────────────────
-    if (approved) {
-      await saveOrder({
-        id:             reference || `EGS-${Date.now()}`,
-        customer_name:  customerName  || null,
-        customer_cpf:   customerCpf   || null,
-        customer_email: customerEmail || null,
-        customer_phone: customerPhone || null,
-        city:           city          || null,
-        payment_method: kind === "debit" ? "debito" : "credito",
-        status:         "confirmado",              // cartão aprovado = confirmado
-        total:          (Number(amount) / 100).toFixed(2),
-        installments:   Number(installments) || 1,
-        tid:            cardData.tid              || null,
-        nsu:            cardData.nsu              || null,
-        auth_code: cardData.authorizationCode || null,
-        items:          items || [],
-        created_at:     new Date().toISOString(),
-      });
+    /* Crédito */
+    if (kind === "credit") {
+      const body = {
+        seller_id: GETNET_SELLER_ID, amount: amountNum, currency: "BRL",
+        order: orderObj, customer: customerObj, device: deviceObj,
+        credit: {
+          delayed: false, authenticated: false, pre_authorization: false, save_card_data: false,
+          transaction_type: "FULL", number_installments: Number(installments) || 1,
+          soft_descriptor: "EGS MATERIAIS", dynamic_mcc: 1799, card: cardObj,
+        },
+      };
+      console.log("CREDIT BODY:", JSON.stringify(body));
+      const { data } = await gFetch(`${GETNET_URL}/v1/payments/credit`, { method:"POST", headers:cardHeaders, body:JSON.stringify(body) });
+      const status = data.status === "APPROVED" ? "approved" : "pending";
+      await insertOrder({ ...baseRow, tid: data.payment_id||null, status, auth_code: data.credit?.authorization_code||"", return_code: data.credit?.terminal_nsu||"" });
+      return res.status(200).json(data);
     }
 
-    return res.status(200).json({
-      kind,
-      tid: cardData.tid,
-      nsu: cardData.nsu,
-      authorizationCode: cardData.authorizationCode,
-      status: approved ? "approved" : "declined",
-      returnCode: cardData.returnCode,
-      returnMessage: cardData.returnMessage,
-    });
+    /* Débito */
+    if (kind === "debit") {
+      const body = {
+        seller_id: GETNET_SELLER_ID, amount: amountNum, currency: "BRL",
+        order: orderObj, customer: customerObj, device: deviceObj,
+        debit: { authenticated: false, transaction_type: "FULL", soft_descriptor: "EGS MATERIAIS", card: cardObj },
+      };
+      console.log("DEBIT BODY:", JSON.stringify(body));
+      const { data } = await gFetch(`${GETNET_URL}/v1/payments/debit`, { method:"POST", headers:cardHeaders, body:JSON.stringify(body) });
+      const status = data.status === "APPROVED" ? "approved" : "pending";
+      await insertOrder({ ...baseRow, tid: data.payment_id||null, status, auth_code: data.debit?.authorization_code||"", return_code: data.debit?.terminal_nsu||"" });
+      return res.status(200).json(data);
+    }
 
   } catch (err) {
-    console.error("Erro checkout:", err);
-    return res.status(500).json({ error: "Erro interno", message: err.message });
+    console.error("[checkout-getnet] Erro:", err.message);
+    return res.status(500).json({ error: err.message });
   }
-}
+};
