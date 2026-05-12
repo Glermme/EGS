@@ -1076,8 +1076,8 @@ function validateCheckout(){
     const cvv=document.getElementById(isCredit?'ckCvv':'ckCvvD').value;
     const hld=document.getElementById(isCredit?'ckHolder':'ckHolderD').value.trim();
     if(num.length<16)return'Número do cartão inválido';
-    if(!exp.includes('/')||exp.length<7)return'Validade inválida';
-    if(cvv.length<3)return'CVV inválido';
+if(!/^\d{2}\/\d{2}$/.test(exp))
+  return 'Validade inválida';    if(cvv.length<3)return'CVV inválido';
     if(!hld||hld.length<3)return'Informe o nome do titular';
   }
   return null;
