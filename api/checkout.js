@@ -135,6 +135,7 @@ function detectBrand(num) {
 /* ── Handler ─────────────────────────────────── */
 module.exports = async function handler(req, res) {
   try {
+
     console.log("=== CHECKOUT START ===");
     console.log("BODY:", JSON.stringify(req.body));
 
@@ -191,6 +192,7 @@ module.exports = async function handler(req, res) {
     }
 
     if (kind !== "pix") {
+
       if (!cardNumber || String(cardNumber).replace(/\D/g, "").length < 13) {
         return res.status(400).json({
           error: "Número de cartão inválido",
@@ -224,7 +226,8 @@ module.exports = async function handler(req, res) {
     const orderId =
       reference || `EGS-${Date.now()}`;
 
-    const amountNum = Number(amount);
+    const amountNum =
+      Number(amount);
 
     const nameParts =
       customerName.trim().split(" ");
@@ -237,11 +240,14 @@ module.exports = async function handler(req, res) {
       last_name:
         nameParts.slice(1).join(" ") || ".",
 
-      name: customerName.trim(),
+      name:
+        customerName.trim(),
 
-      email: customerEmail,
+      email:
+        customerEmail,
 
-      document_type: "CPF",
+      document_type:
+        "CPF",
 
       document_number:
         String(customerCpf).replace(/\D/g, ""),
@@ -250,13 +256,26 @@ module.exports = async function handler(req, res) {
         String(customerPhone).replace(/\D/g, ""),
 
       billing_address: {
-        street: addrStreet || "",
-        number: addrNumber || "",
-        complement: addrComplement || "",
-        district: addrDistrict || "",
-        city: addrCity || "",
-        state: addrState || "",
-        country: "Brasil",
+        street:
+          addrStreet || "",
+
+        number:
+          addrNumber || "",
+
+        complement:
+          addrComplement || "",
+
+        district:
+          addrDistrict || "",
+
+        city:
+          addrCity || "",
+
+        state:
+          addrState || "",
+
+        country:
+          "Brasil",
 
         postal_code:
           String(addrZip || "").replace(/\D/g, ""),
@@ -264,53 +283,77 @@ module.exports = async function handler(req, res) {
     };
 
     const deviceObj = {
-      device_id: "device-" + Date.now(),
+      device_id:
+        "device-" + Date.now(),
 
       ip_address:
         req.headers["x-forwarded-for"] || "127.0.0.1",
     };
 
     const orderObj = {
-      order_id: orderId,
-      sales_tax: 0,
-      product_type: "service",
+      order_id:
+        orderId,
+
+      sales_tax:
+        0,
+
+      product_type:
+        "service",
     };
 
     const baseRow = {
-      reference: orderId,
+      reference:
+        orderId,
+
       kind,
-      amount: amountNum,
+
+      amount:
+        amountNum,
 
       installments:
         Number(installments) || 1,
 
-      customer_name: customerName,
-      customer_email: customerEmail,
+      customer_name:
+        customerName,
+
+      customer_email:
+        customerEmail,
 
       customer_cpf:
         String(customerCpf).replace(/\D/g, ""),
 
-      items: items || "",
-      status: "pending",
+      items:
+        items || "",
+
+      status:
+        "pending",
     };
 
     /* ── PIX ───────────────────────────────── */
     if (kind === "pix") {
+
       const pixBody = {
-        seller_id: GETNET_SELLER_ID,
+        seller_id:
+          GETNET_SELLER_ID,
 
-        amount: amountNum,
+        amount:
+          amountNum,
 
-        currency: "BRL",
+        currency:
+          "BRL",
 
-        order: orderObj,
+        order:
+          orderObj,
 
-        customer: customerObj,
+        customer:
+          customerObj,
 
-        device: deviceObj,
+        device:
+          deviceObj,
 
         pix: {
-          expiration_time: 3600,
+          expiration_time:
+            3600,
 
           additional_data: [
             {
@@ -321,7 +364,10 @@ module.exports = async function handler(req, res) {
         },
       };
 
-      console.log("PIX BODY:", JSON.stringify(pixBody));
+      console.log(
+        "PIX BODY:",
+        JSON.stringify(pixBody)
+      );
 
       const { data } = await gFetch(
         `${GETNET_URL}/v1/payments/qrcode/pix`,
@@ -334,13 +380,15 @@ module.exports = async function handler(req, res) {
             "Content-Type": "application/json",
           },
 
-          body: JSON.stringify(pixBody),
+          body:
+            JSON.stringify(pixBody),
         }
       );
 
       await insertOrder({
         ...baseRow,
-        tid: data.payment_id || null,
+        tid:
+          data.payment_id || null,
       });
 
       return res.status(200).json(data);
@@ -351,7 +399,9 @@ module.exports = async function handler(req, res) {
       cardExpiry.split("/");
 
     const year =
-      String(yearRaw).trim();
+      String(yearRaw)
+        .trim()
+        .slice(-2);
 
     const numberToken = await tokenizeCard(
       token,
@@ -360,13 +410,19 @@ module.exports = async function handler(req, res) {
     );
 
     const cardHeaders = {
-      Authorization: `Bearer ${token}`,
-      "x-seller-id": GETNET_SELLER_ID,
-      "Content-Type": "application/json",
+      Authorization:
+        `Bearer ${token}`,
+
+      "x-seller-id":
+        GETNET_SELLER_ID,
+
+      "Content-Type":
+        "application/json",
     };
 
     const cardObj = {
-      number_token: numberToken,
+      number_token:
+        numberToken,
 
       cardholder_name:
         cardHolder.trim().toUpperCase(),
@@ -396,26 +452,36 @@ module.exports = async function handler(req, res) {
           : "FULL";
 
       const body = {
-        seller_id: GETNET_SELLER_ID,
+        seller_id:
+          GETNET_SELLER_ID,
 
-        amount: amountNum,
+        amount:
+          amountNum,
 
-        currency: "BRL",
+        currency:
+          "BRL",
 
-        order: orderObj,
+        order:
+          orderObj,
 
-        customer: customerObj,
+        customer:
+          customerObj,
 
-        device: deviceObj,
+        device:
+          deviceObj,
 
         credit: {
-          delayed: false,
+          delayed:
+            false,
 
-          authenticated: false,
+          authenticated:
+            false,
 
-          pre_authorization: false,
+          pre_authorization:
+            false,
 
-          save_card_data: false,
+          save_card_data:
+            false,
 
           transaction_type:
             transactionType,
@@ -426,7 +492,8 @@ module.exports = async function handler(req, res) {
           soft_descriptor:
             "EGS MATERIAIS",
 
-          card: cardObj,
+          card:
+            cardObj,
         },
       };
 
@@ -440,9 +507,11 @@ module.exports = async function handler(req, res) {
         {
           method: "POST",
 
-          headers: cardHeaders,
+          headers:
+            cardHeaders,
 
-          body: JSON.stringify(body),
+          body:
+            JSON.stringify(body),
         }
       );
 
@@ -473,27 +542,36 @@ module.exports = async function handler(req, res) {
     if (kind === "debit") {
 
       const body = {
-        seller_id: GETNET_SELLER_ID,
+        seller_id:
+          GETNET_SELLER_ID,
 
-        amount: amountNum,
+        amount:
+          amountNum,
 
-        currency: "BRL",
+        currency:
+          "BRL",
 
-        order: orderObj,
+        order:
+          orderObj,
 
-        customer: customerObj,
+        customer:
+          customerObj,
 
-        device: deviceObj,
+        device:
+          deviceObj,
 
         debit: {
-          authenticated: false,
+          authenticated:
+            false,
 
-          transaction_type: "FULL",
+          transaction_type:
+            "FULL",
 
           soft_descriptor:
             "EGS MATERIAIS",
 
-          card: cardObj,
+          card:
+            cardObj,
         },
       };
 
@@ -507,9 +585,11 @@ module.exports = async function handler(req, res) {
         {
           method: "POST",
 
-          headers: cardHeaders,
+          headers:
+            cardHeaders,
 
-          body: JSON.stringify(body),
+          body:
+            JSON.stringify(body),
         }
       );
 
@@ -544,7 +624,8 @@ module.exports = async function handler(req, res) {
     );
 
     return res.status(500).json({
-      error: err.message,
+      error:
+        err.message,
     });
   }
 };
